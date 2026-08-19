@@ -1,0 +1,5 @@
+module modules
+singleton Theme 1.0 Theme.qml
+singleton VolumeState 1.0 VolumeState.qml
+singleton BrightnessState 1.0 BrightnessState.qml
+singleton WifiState 1.0 WifiState.qml

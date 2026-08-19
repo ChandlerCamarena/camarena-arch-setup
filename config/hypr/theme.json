@@ -1,0 +1,40 @@
+{
+  "colors": {
+    "bg": "1e2060",
+    "bg_dark": "0d0f1a",
+    "bg_surface": "252870",
+    "bg_float": "1a1c2e",
+    "border_inactive": "2e328055",
+    "coral": "e8505b",
+    "coral_dim": "a03840",
+    "purple": "9b6eb5",
+    "purple_dim": "6b4e80",
+    "cyan": "06afc7",
+    "cyan_dim": "047a8c",
+    "error": "ff3fa4",
+    "warning": "f0a050",
+    "fg": "c8cae8",
+    "fg_dim": "8890b8",
+    "fg_subtle": "555880",
+    "shadow": "0d0f1a99"
+  },
+  "bevel": {
+    "raised_light": "3a3e9c",
+    "raised_dark": "10122a",
+    "sunken_light": "10122a",
+    "sunken_dark": "3a3e9c",
+    "width": 4
+  },
+  "layout": {
+    "border_size": 3,
+    "rounding": 0,
+    "gaps_in": 2,
+    "gaps_out": 2
+  },
+  "font": {
+    "family": "Departure Mono",
+    "icon_family": "Symbols Nerd Font",
+    "size_base": 14
+  },
+  "terminal_opacity": 0.85
+}

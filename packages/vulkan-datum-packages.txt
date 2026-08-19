@@ -1,0 +1,22 @@
+# vulkan-datum-packages.txt
+# Vulkan / graphics-driver toolchain for Project Datum.
+# NOT core desktop packages -- installed here so a fresh machine has
+# them ready without a separate manual step, but Project Datum's
+# actual code/flake lives in its own repo, not this one.
+#
+# cli11, cpptrace, glm, jemalloc are Quickshell build deps and live
+# in the core pacman-packages.txt instead -- they're DE-required,
+# not Datum-specific.
+
+spirv-headers
+vulkan-headers
+vulkan-html-docs
+vulkan-profiles
+vulkan-utility-libraries
+vulkan-validation-layers
+vulkan-extra-layers
+vulkan-extra-tools
+volk
+strace
+stress-ng
+inotify-tools

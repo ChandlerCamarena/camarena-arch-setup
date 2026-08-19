@@ -1,0 +1,186 @@
+/* Generated from theme.json via generate-thunar-css.sh. Do not edit directly. */
+
+@define-color bg_dark        #{{bg_dark}};
+@define-color bg_surface     #{{bg_surface}};
+@define-color bg_float       #{{bg_float}};
+@define-color coral          #{{coral}};
+@define-color purple         #{{purple}};
+@define-color cyan           #{{cyan}};
+@define-color error          #{{error}};
+@define-color warning        #{{warning}};
+@define-color fg             #{{fg}};
+@define-color fg_dim         #{{fg_dim}};
+@define-color fg_subtle      #{{fg_subtle}};
+@define-color bevel_raised_light #{{bevel_raised_light}};
+@define-color bevel_raised_dark  #{{bevel_raised_dark}};
+@define-color bevel_sunken_light #{{bevel_sunken_light}};
+@define-color bevel_sunken_dark  #{{bevel_sunken_dark}};
+
+/* --------------------------------------------------------
+   BASE OVERRIDE OF ADWAITA-DARK
+   Flat, square, no rounding, matching the QML bevel language.
+   -------------------------------------------------------- */
+* {
+  border-radius: 0;
+  font-family: "{{font_family}}";
+  font-size: {{font_size_base}}px;
+}
+
+window {
+  background-color: @bg_dark;
+  color: @fg;
+}
+
+/* --------------------------------------------------------
+   SIDEBAR (Places panel)
+   CONFIRMED via GTK inspector:
+     ThunarShortcutsPane -> classes: frame sidebar shortcuts-pane
+     ThunarShortcutsView -> classes: view
+   -------------------------------------------------------- */
+.sidebar {
+  background-color: @bg_float;
+  border-right: 3px solid @bevel_sunken_dark;
+}
+
+.sidebar .view {
+  background-color: @bg_float;
+  color: @fg;
+}
+
+.sidebar .view:selected {
+  background-color: @bg_surface;
+  color: @fg;
+  box-shadow: inset 0 0 0 1px @coral;
+}
+
+.sidebar .view:hover {
+  background-color: alpha(@bg_surface, 0.4);
+}
+
+/* --------------------------------------------------------
+   MAIN FILE LIST
+   CONFIRMED via GTK inspector:
+     ThunarIconView -> classes: frame standard-view
+     ExoIconView     -> classes: view
+   -------------------------------------------------------- */
+.standard-view {
+  background-color: @bg_dark;
+}
+
+.standard-view .view {
+  background-color: @bg_dark;
+  color: @fg;
+}
+
+.standard-view .view:selected {
+  background-color: @bg_surface;
+  color: @fg;
+  box-shadow: inset 0 0 0 1px @coral;
+}
+
+.standard-view .view:hover {
+  background-color: alpha(@bg_surface, 0.4);
+}
+
+/* --------------------------------------------------------
+   PREVIEW PANE (present in tree, not requested this session,
+   left themed for consistency since it shares the .view node)
+   -------------------------------------------------------- */
+.preview-pane {
+  background-color: @bg_float;
+  border-left: 3px solid @bevel_sunken_dark;
+}
+
+/* --------------------------------------------------------
+   PATH BAR / LOCATION ENTRY
+   -------------------------------------------------------- */
+entry {
+  background-color: @bg_float;
+  color: @fg;
+  border: {{bevel_width}}px solid @bevel_sunken_dark;
+  box-shadow: inset 1px 1px 0 @bevel_sunken_light;
+}
+
+entry:focus {
+  border-color: @coral;
+}
+
+/* --------------------------------------------------------
+   TOOLBAR / MENUBAR
+   -------------------------------------------------------- */
+toolbar, menubar {
+  background-color: @bg_surface;
+  border-bottom: {{bevel_width}}px solid @bevel_raised_dark;
+  box-shadow: inset 0 1px 0 @bevel_raised_light;
+}
+
+button {
+  background-color: @bg_surface;
+  color: @fg;
+  border: {{bevel_width}}px solid @bevel_raised_dark;
+  box-shadow: inset 1px 1px 0 @bevel_raised_light;
+  border-radius: 0;
+}
+
+button:active, button:checked {
+  border-color: @bevel_sunken_dark;
+  box-shadow: inset 1px 1px 0 @bevel_sunken_light;
+}
+
+/* --------------------------------------------------------
+   CONTEXT MENU
+   CONFIRMED from GTK3 docs (GtkMenu's popup toplevel isn't
+   reachable via the inspector's picker, but its CSS node
+   naming is documented and stable):
+     main node: "menu"
+     scroll-arrow subnodes: "arrow" with .top / .bottom classes
+   menuitem/separator are standard GTK3 CSS node names.
+   -------------------------------------------------------- */
+menu {
+  background-color: @bg_float;
+  border: 1px solid @bevel_raised_dark;
+  padding: 2px;
+}
+
+menu menuitem {
+  color: @fg;
+  padding: 4px 8px;
+}
+
+menu menuitem:hover {
+  background-color: @bg_surface;
+  color: @coral;
+}
+
+menu separator {
+  background-color: @bevel_sunken_dark;
+  min-height: 1px;
+  margin: 2px 0;
+}
+
+/* --------------------------------------------------------
+   SCROLLBAR
+   -------------------------------------------------------- */
+scrollbar {
+  background-color: @bg_dark;
+}
+
+scrollbar slider {
+  background-color: @fg_subtle;
+  border-radius: 0;
+  min-width: 10px;
+  min-height: 10px;
+}
+
+scrollbar slider:hover {
+  background-color: @purple;
+}
+
+/* --------------------------------------------------------
+   STATUS BAR (bottom)
+   -------------------------------------------------------- */
+statusbar {
+  background-color: @bg_surface;
+  color: @fg_dim;
+  border-top: {{bevel_width}}px solid @bevel_raised_dark;
+}

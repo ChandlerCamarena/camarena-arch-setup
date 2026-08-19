@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Creating snapper pre-transaction snapshot...
+When = PreTransaction
+Exec = /usr/bin/snapper -c root create -t pre -p -d "pacman pre-transaction"
+NeedsTargets

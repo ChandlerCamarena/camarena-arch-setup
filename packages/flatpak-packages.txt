@@ -1,0 +1,4 @@
+# flatpak-packages.txt
+# Empty on purpose. Surfshark previously ran via Flatpak
+# (com.surfshark.Surfshark) -- moved to the native surfshark-client
+# pacman package instead, kept in pacman-packages.txt.
