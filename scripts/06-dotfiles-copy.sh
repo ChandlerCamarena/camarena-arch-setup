@@ -8,6 +8,11 @@ require_not_root
 
 CONFIG_SRC="$SCRIPT_DIR/../config"
 
+log "Setting system-wide ZDOTDIR..."
+if ! grep -q 'ZDOTDIR' /etc/zsh/zshenv 2>/dev/null; then
+    echo 'export ZDOTDIR="$HOME/.config/zsh"' | sudo tee -a /etc/zsh/zshenv
+fi
+
 log "Copying Quickshell config..."
 copy_plain "$CONFIG_SRC/quickshell/shell.qml"                       "$HOME/.config/quickshell/shell.qml"
 copy_plain "$CONFIG_SRC/quickshell/modules/qmldir"                  "$HOME/.config/quickshell/modules/qmldir"
@@ -83,6 +88,8 @@ copy_plain "$CONFIG_SRC/nvim/lua/lsp.lua"        "$HOME/.config/nvim/lua/lsp.lua
 log "Copying Rofi config..."
 copy_plain "$CONFIG_SRC/rofi/config.rasi"    "$HOME/.config/rofi/config.rasi"
 copy_plain "$CONFIG_SRC/rofi/powermenu.rasi" "$HOME/.config/rofi/powermenu.rasi"
+copy_plain "$CONFIG_SRC/rofi/launchers/type-1/launcher.sh" "$HOME/.config/rofi/launchers/type-1/launcher.sh"
+chmod +x "$HOME/.config/rofi/launchers/type-1/launcher.sh"
 
 log "Copying Thunar config..."
 copy_plain "$CONFIG_SRC/Thunar/uca.xml"    "$HOME/.config/Thunar/uca.xml"
@@ -103,6 +110,14 @@ if [[ ! -d "$HOME/.config/zsh/oh-my-zsh" ]]; then
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 else
     log "oh-my-zsh already present, skipping."
+fi
+
+log "Installing powerlevel10k theme..."
+P10K_DIR="$HOME/.config/zsh/ohmyzsh/custom/themes/powerlevel10k"
+if [[ ! -d "$P10K_DIR" ]]; then
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K_DIR"
+else
+    log "powerlevel10k already present, skipping."
 fi
 
 copy_plain "$CONFIG_SRC/yazi/."        "$HOME/.config/yazi"
