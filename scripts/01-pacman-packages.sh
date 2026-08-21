@@ -7,17 +7,96 @@ source "$SCRIPT_DIR/lib/common.sh"
 require_not_root
 require_arch
 
-PKGLIST="$SCRIPT_DIR/../packages/pacman-packages.txt"
+section() {
+    echo ""
+    echo "===== SECTION: $1 ====="
+}
 
-if [[ ! -f "$PKGLIST" ]]; then
-    err "Package list not found at $PKGLIST"
+section_done() {
+    echo "===== DONE: $1 ====="
+    echo ""
+}
+
+# ---------------------------------------------------------------------------
+section "PACMAN"
+
+HOOK_SRC="$SCRIPT_DIR/../config/pacman-hooks/00-snapshot.hook"
+HOOK_DEST="/etc/pacman.d/hooks/00-snapshot.hook"
+
+if [[ -f "$HOOK_SRC" ]]; then
+    log "Installing snapper pre-transaction snapshot hook..."
+    sudo mkdir -p "$(dirname "$HOOK_DEST")"
+    sudo cp "$HOOK_SRC" "$HOOK_DEST"
+else
+    err "Snapshot hook source not found at $HOOK_SRC, skipping. First pacman transaction below will run WITHOUT snapshot protection."
+fi
+
+PACMAN_PKGLIST="$SCRIPT_DIR/../packages/pacman-packages.txt"
+
+if [[ ! -f "$PACMAN_PKGLIST" ]]; then
+    err "Package list not found at $PACMAN_PKGLIST"
     exit 1
 fi
 
-log "Reading package list from $PKGLIST..."
-mapfile -t packages < <(grep -vE '^\s*#|^\s*$' "$PKGLIST")
+log "Updating package databases..."
+sudo pacman -Sy
 
-log "Syncing databases, upgrading system, and installing packages in one transaction..."
-sudo pacman -Syu --needed --noconfirm "${packages[@]}"
+log "Installing packages from $PACMAN_PKGLIST..."
+mapfile -t pacman_packages < <(grep -vE '^\s*#|^\s*$' "$PACMAN_PKGLIST")
+sudo pacman -S --needed --noconfirm "${pacman_packages[@]}"
 
-log "Package install stage complete."
+section_done "PACMAN"
+
+# ---------------------------------------------------------------------------
+section "FLATPAK"
+
+FLATPAK_PKGLIST="$SCRIPT_DIR/../packages/flatpak-packages.txt"
+
+if ! command_exists flatpak; then
+    err "flatpak binary not found after pacman section. Check that 'flatpak' is listed in pacman-packages.txt."
+    exit 1
+fi
+
+log "Ensuring Flathub remote is configured..."
+if ! flatpak remote-list | grep -q '^flathub'; then
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+else
+    log "Flathub remote already present."
+fi
+
+if [[ ! -f "$FLATPAK_PKGLIST" ]]; then
+    err "Flatpak package list not found at $FLATPAK_PKGLIST"
+    exit 1
+fi
+
+mapfile -t flatpak_apps < <(grep -vE '^\s*#|^\s*$' "$FLATPAK_PKGLIST")
+
+for app in "${flatpak_apps[@]}"; do
+    if flatpak list --app | awk '{print $2}' | grep -qx "$app"; then
+        log "$app already installed, updating..."
+        flatpak update --noninteractive "$app"
+    else
+        log "Installing $app..."
+        flatpak install --noninteractive flathub "$app"
+    fi
+done
+
+section_done "FLATPAK"
+
+# ---------------------------------------------------------------------------
+section "AUX (Vulkan/Datum)"
+
+AUX_PKGLIST="$SCRIPT_DIR/../packages/vulkan-datum-packages.txt"
+
+if [[ ! -f "$AUX_PKGLIST" ]]; then
+    err "Vulkan/Datum package list not found at $AUX_PKGLIST"
+    exit 1
+fi
+
+log "Installing Vulkan/Datum toolchain packages from $AUX_PKGLIST..."
+mapfile -t aux_packages < <(grep -vE '^\s*#|^\s*$' "$AUX_PKGLIST")
+sudo pacman -S --needed --noconfirm "${aux_packages[@]}"
+
+section_done "AUX (Vulkan/Datum)"
+
+log "Package preparation stage complete."
