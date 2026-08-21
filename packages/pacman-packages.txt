@@ -102,6 +102,7 @@ tumbler
 unzip
 uwsm
 vivaldi
+vulkan-headers
 vulkan-tools
 wayland-protocols
 wget
