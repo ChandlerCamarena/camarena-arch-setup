@@ -1,1 +1,14 @@
+/**
+ * Retrowave color scheme
+ * Derived from city pop wallpaper palette.
+ * Matches hyprland theme.lua
+ **/
 
+* {
+    background:     #1e2060ff;   /* bg -- deep indigo */
+    background-alt: #252870ff;   /* bg_surface -- raised surface */
+    foreground:     #c8cae8ff;   /* fg -- cool white */
+    selected:       #e8505bff;   /* coral -- primary accent */
+    active:         #9b6eb5ff;   /* purple -- secondary accent */
+    urgent:         #ff3fa4ff;   /* hot pink -- error */
+}
