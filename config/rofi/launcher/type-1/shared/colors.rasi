@@ -1,1 +1,5 @@
-
+/**
+ * Retrowave color scheme
+ * Generated for Chandler's rice.
+ **/
+@import "~/.config/rofi/colors/retrowave.rasi"
