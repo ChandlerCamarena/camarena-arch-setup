@@ -23,7 +23,7 @@ Layout will keep shifting as the project grows — treat directory *purpose* as 
 - **`fonts/`** — Departure Mono (OFL-licensed), installed to the system font path.
 - **`install.sh`** — entry point, runs all staged scripts in order and sets `core.hooksPath` for the repo automatically. Self-deletes only after every stage passes, gated behind a safety check.
 
-`scripts/lib/verify-repo.sh` is a separate, manually-run repo linter (checks `copy_plain` sources exist, package-list naming for AUR-suspicious patterns, README stage range accuracy, and script header conventions). Run it directly before committing: `bash scripts/lib/verify-repo.sh`.
+`scripts/lib/verify-repo.sh` is a repo linter, wired into the `pre-commit` git hook (`scripts/git-hooks/pre-commit`) so it runs automatically on every commit. Run it directly any time with `bash scripts/lib/verify-repo.sh`.
 
 ## Usage
 
