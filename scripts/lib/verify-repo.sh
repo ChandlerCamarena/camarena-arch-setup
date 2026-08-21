@@ -2,24 +2,27 @@
 # verify-repo.sh - repo-level sanity checks, NOT part of install.sh.
 # Run manually or via the pre-commit hook before committing.
 set -uo pipefail
-
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
-
 fail=0
 log()   { echo "[verify-repo] $*"; }
 error() { echo "[verify-repo] ERROR: $*" >&2; fail=1; }
 warn()  { echo "[verify-repo] WARN:  $*" >&2; }
 
-log "Checking every copy_plain source in 06-dotfiles-copy.sh actually exists..."
-missing=0
-while read -r p; do
-    if [[ ! -e "config/$p" ]]; then
-        error "missing config/$p (referenced by 06-dotfiles-copy.sh)"
-        missing=1
-    fi
-done < <(grep -oP '(?<=copy_plain "\$CONFIG_SRC/)[^"]+' scripts/06-dotfiles-copy.sh)
-[[ "$missing" -eq 0 ]] && log "  all copy_plain sources present."
+DOTFILES_SCRIPT="$(ls scripts/*-dotfiles-copy.sh 2>/dev/null | head -1)"
+if [[ -z "$DOTFILES_SCRIPT" ]]; then
+    error "no scripts/*-dotfiles-copy.sh found"
+else
+    log "Checking every copy_plain source in $DOTFILES_SCRIPT actually exists..."
+    missing=0
+    while read -r p; do
+        if [[ ! -e "config/$p" ]]; then
+            error "missing config/$p (referenced by $DOTFILES_SCRIPT)"
+            missing=1
+        fi
+    done < <(grep -oP '(?<=copy_plain "\$CONFIG_SRC/)[^"]+' "$DOTFILES_SCRIPT")
+    [[ "$missing" -eq 0 ]] && log "  all copy_plain sources present."
+fi
 
 log "Checking package lists for AUR-suspicious naming (-bin/-git/-dkms)..."
 for pkglist in packages/pacman-packages.txt packages/vulkan-datum-packages.txt; do
