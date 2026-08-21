@@ -1,0 +1,7 @@
+/**
+ * Fonts
+ * Departure Mono -- retrowave terminal aesthetic
+ **/
+* {
+    font: "Departure Mono 11";
+}
