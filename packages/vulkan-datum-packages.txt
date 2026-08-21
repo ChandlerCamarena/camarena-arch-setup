@@ -9,7 +9,6 @@
 # not Datum-specific.
 
 spirv-headers
-vulkan-headers
 vulkan-html-docs
 vulkan-profiles
 vulkan-utility-libraries
