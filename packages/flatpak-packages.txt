@@ -1,4 +1,5 @@
 # flatpak-packages.txt
-# Empty on purpose. Surfshark previously ran via Flatpak
-# (com.surfshark.Surfshark) -- moved to the native surfshark-client
-# pacman package instead, kept in pacman-packages.txt.
+# Surfshark is not installed as a client app. Connections are managed
+# via raw WireGuard config files, not a GUI/CLI client.
+
+com.github.IsmaelMartinez.teams_for_linux
