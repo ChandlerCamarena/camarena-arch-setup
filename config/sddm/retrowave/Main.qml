@@ -21,6 +21,29 @@ Rectangle {
 
   TextConstants { id: textConstants }
 
+  function loadTheme() {
+    var xhr = new XMLHttpRequest()
+    xhr.open("GET", "theme.json")
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        try {
+          var t = JSON.parse(xhr.responseText).colors
+          bg      = "#" + t.bg_dark
+          surface = "#" + t.bg
+          coral   = "#" + t.coral
+          purple  = "#" + t.purple
+          fg      = "#" + t.fg
+          fg_dim  = "#" + t.fg_dim
+          success = "#" + t.cyan
+          failure = "#" + t.error
+        } catch (e) {
+          console.log("theme.json read failed, using built-in fallback colors: " + e)
+        }
+      }
+    }
+    xhr.send()
+  }
+
   Connections {
     target: sddm
     onLoginSucceeded: {
@@ -37,11 +60,6 @@ Rectangle {
   signal tryLogin()
   onTryLogin: {
     sddm.login(username_field.text, password_field.text, session_box.index)
-  }
-
-  FontLoader {
-    id: departure_mono
-    source: "fonts/DepartureMono-Regular.otf"
   }
 
   Image {
@@ -265,6 +283,7 @@ Rectangle {
   }
 
   Component.onCompleted: {
+    loadTheme()
     if (username_field.text === "")
       username_field.focus = true
     else
