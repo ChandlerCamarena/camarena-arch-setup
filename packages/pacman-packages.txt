@@ -75,6 +75,7 @@ otf-geist-mono-nerd
 pavucontrol
 pipewire-pulse
 pkgconf
+playerctl
 prismlauncher
 python-pip
 qt5-wayland
@@ -92,8 +93,6 @@ socat
 spotify-launcher
 steam
 sudo
-surfshark-client
-teams-for-linux-bin
 thunar
 thunar-archive-plugin
 tree
