@@ -50,7 +50,7 @@ else
     git -C "$XPADNEO_SRC_DIR" pull --ff-only
 fi
 
-if sudo dkms status | grep -q '^xpadneo'; then
+if sudo dkms status | grep -q '^hid-xpadneo'; then
     log "xpadneo DKMS module already registered, skipping install."
 else
     log "Installing xpadneo via its own install script (runs dkms add/build/install)..."
