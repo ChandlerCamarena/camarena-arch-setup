@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
-
 require_not_root
 require_arch
 
@@ -11,7 +9,6 @@ section() {
     echo ""
     echo "===== SECTION: $1 ====="
 }
-
 section_done() {
     echo "===== DONE: $1 ====="
     echo ""
@@ -22,7 +19,6 @@ section "PACMAN"
 
 HOOK_SRC="$SCRIPT_DIR/../config/pacman-hooks/00-snapshot.hook"
 HOOK_DEST="/etc/pacman.d/hooks/00-snapshot.hook"
-
 if [[ -f "$HOOK_SRC" ]]; then
     log "Installing snapper pre-transaction snapshot hook..."
     sudo mkdir -p "$(dirname "$HOOK_DEST")"
@@ -31,8 +27,15 @@ else
     err "Snapshot hook source not found at $HOOK_SRC, skipping. First pacman transaction below will run WITHOUT snapshot protection."
 fi
 
-PACMAN_PKGLIST="$SCRIPT_DIR/../packages/pacman-packages.txt"
+log "Enabling multilib repo..."
+if ! grep -q '^\[multilib\]' /etc/pacman.conf; then
+    sudo sed -i '/^#\[multilib\]/,/^#Include/ s/^#//' /etc/pacman.conf
+    log "multilib enabled."
+else
+    log "multilib already enabled, skipping."
+fi
 
+PACMAN_PKGLIST="$SCRIPT_DIR/../packages/pacman-packages.txt"
 if [[ ! -f "$PACMAN_PKGLIST" ]]; then
     err "Package list not found at $PACMAN_PKGLIST"
     exit 1
@@ -51,7 +54,6 @@ section_done "PACMAN"
 section "FLATPAK"
 
 FLATPAK_PKGLIST="$SCRIPT_DIR/../packages/flatpak-packages.txt"
-
 if ! command_exists flatpak; then
     err "flatpak binary not found after pacman section. Check that 'flatpak' is listed in pacman-packages.txt."
     exit 1
@@ -70,7 +72,6 @@ if [[ ! -f "$FLATPAK_PKGLIST" ]]; then
 fi
 
 mapfile -t flatpak_apps < <(grep -vE '^\s*#|^\s*$' "$FLATPAK_PKGLIST")
-
 for app in "${flatpak_apps[@]}"; do
     if flatpak list --app | awk '{print $2}' | grep -qx "$app"; then
         log "$app already installed, updating..."
@@ -87,7 +88,6 @@ section_done "FLATPAK"
 section "AUX (Vulkan/Datum)"
 
 AUX_PKGLIST="$SCRIPT_DIR/../packages/vulkan-datum-packages.txt"
-
 if [[ ! -f "$AUX_PKGLIST" ]]; then
     err "Vulkan/Datum package list not found at $AUX_PKGLIST"
     exit 1
