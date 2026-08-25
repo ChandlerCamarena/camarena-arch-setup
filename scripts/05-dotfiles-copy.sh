@@ -47,7 +47,7 @@ copy_plain "$CONFIG_SRC/quickshell/modules/RiceSwitcher.qml"         "$HOME/.con
 log "Copying Hyprland config..."
 copy_plain "$CONFIG_SRC/hypr/hyprland.lua"          "$HOME/.config/hypr/hyprland.lua"
 copy_plain "$CONFIG_SRC/hypr/hypridle.conf"         "$HOME/.config/hypr/hypridle.conf"
-copy_plain "$CONFIG_SRC/hypr/hyprlock.conf"         "$HOME/.config/hypr/hyprlock.conf"
+copy_plain "$CONFIG_SRC/hypr/hyprlock.conf.template" "$HOME/.config/hypr/hyprlock.conf.template"
 copy_plain "$CONFIG_SRC/hypr/hyprpaper.conf"        "$HOME/.config/hypr/hyprpaper.conf"
 copy_plain "$CONFIG_SRC/hypr/theme.json"            "$HOME/.config/hypr/theme.json"
 
@@ -68,6 +68,7 @@ copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-theme.sh"        "$HOME
 copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-colors.sh"        "$HOME/.config/hypr/scripts/generation/generate-colors.sh"
 copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-theme-colors.sh"  "$HOME/.config/hypr/scripts/generation/generate-theme-colors.sh"
 copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-thunar-css.sh"    "$HOME/.config/hypr/scripts/generation/generate-thunar-css.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-hyprlock.sh"      "$HOME/.config/hypr/scripts/generation/generate-hyprlock.sh"
 
 chmod +x "$HOME/.config/hypr/scripts/idle/"*.sh
 chmod +x "$HOME/.config/hypr/scripts/media/"*.sh
@@ -134,5 +135,6 @@ bash "$HOME/.config/hypr/scripts/generation/generate-theme.sh"
 bash "$HOME/.config/hypr/scripts/generation/generate-colors.sh"
 bash "$HOME/.config/hypr/scripts/generation/generate-theme-colors.sh"
 bash "$HOME/.config/hypr/scripts/generation/generate-thunar-css.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-hyprlock.sh"
 
 log "Dotfiles copy stage complete."
