@@ -49,7 +49,6 @@ marker_selected = { fg = "#${warning}", bg = "#${warning}" }
 
 tab_active   = { fg = "#${bg}", bg = "#${coral}" }
 tab_inactive = { fg = "#${fg_dim}", bg = "#${bg_surface}" }
-tab_width    = 1
 
 count_copied   = { fg = "#${bg}", bg = "#${cyan}" }
 count_cut      = { fg = "#${bg}", bg = "#${error}" }
