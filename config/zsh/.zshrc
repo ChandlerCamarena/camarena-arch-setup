@@ -9,7 +9,7 @@ fi
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
 # Path to your Oh My Zsh installation.
-export ZSH="$ZDOTDIR/oh-my-zsh"
+export ZSH="$ZDOTDIR/ohmyzsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time Oh My Zsh is loaded, in which case,
@@ -80,7 +80,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(git)
 
 DISABLE_MAGIC_FUNCTIONS=true
-source $ZSH/oh-my-zsh.sh
+source $ZSH/ohmyzsh/ohmyzsh.sh
 HISTFILE="$ZDOTDIR/.zsh_history"
 
 # User configuration
