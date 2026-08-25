@@ -79,7 +79,7 @@ Item {
 
     Process {
         id: mainProc
-        command: ["sh", "-c", 'echo "CPU:$(head -1 /proc/stat)"; grep -E "^(MemTotal|MemFree|MemAvailable|Buffers|Cached|Shmem|SwapTotal|SwapFree):" /proc/meminfo | sed "s/^/MEM:/"; cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq 2>/dev/null | sed "s/^/FREQ:/"; grep -E "^(pswpin|pswpout)" /proc/vmstat | sed "s/^/VMSTAT:/"; cat /sys/class/thermal/thermal_zone12/temp 2>/dev/null | sed "s/^/TEMP:/"; df -h / --output=used,size | tail -1 | sed "s/^/DISK:/"']
+        command: ["sh", "-c", 'echo "CPU:$(head -1 /proc/stat)"; grep -E "^(MemTotal|MemFree|MemAvailable|Buffers|Cached|Shmem|SwapTotal|SwapFree):" /proc/meminfo | sed "s/^/MEM:/"; cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq 2>/dev/null | sed "s/^/FREQ:/"; grep -E "^(pswpin|pswpout)" /proc/vmstat | sed "s/^/VMSTAT:/"; for z in /sys/class/thermal/thermal_zone*/type; do d=$(dirname "$z"); if [ "$(cat "$z" 2>/dev/null)" = "x86_pkg_temp" ]; then cat "$d/temp" 2>/dev/null | sed "s/^/TEMP:/"; break; fi; done; df -h / --output=used,size | tail -1 | sed "s/^/DISK:/"']
         stdout: SplitParser {
             onRead: line => {
                 if (line.startsWith("CPU:")) {
