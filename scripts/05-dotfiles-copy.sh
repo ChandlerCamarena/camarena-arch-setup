@@ -59,17 +59,20 @@ copy_plain "$CONFIG_SRC/hypr/modules/binds.lua"     "$HOME/.config/hypr/modules/
 copy_plain "$CONFIG_SRC/hypr/modules/rules.lua"     "$HOME/.config/hypr/modules/rules.lua"
 
 log "Copying Hyprland scripts..."
-copy_plain "$CONFIG_SRC/hypr/scripts/idle-action.sh"    "$HOME/.config/hypr/scripts/idle-action.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/media-priority.sh" "$HOME/.config/hypr/scripts/media-priority.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/cliphist-rofi.sh"  "$HOME/.config/hypr/scripts/cliphist-rofi.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/powermenu.sh"      "$HOME/.config/hypr/scripts/powermenu.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/idle/idle-action.sh"    "$HOME/.config/hypr/scripts/idle/idle-action.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/media/media-priority.sh" "$HOME/.config/hypr/scripts/media/media-priority.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/clipboard/cliphist-rofi.sh"  "$HOME/.config/hypr/scripts/clipboard/cliphist-rofi.sh"
 
 log "Copying theme generator scripts (outputs are NOT committed, generated below)..."
-copy_plain "$CONFIG_SRC/hypr/scripts/generate-theme.sh"        "$HOME/.config/hypr/scripts/generate-theme.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/generate-colors.sh"        "$HOME/.config/hypr/scripts/generate-colors.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/generate-theme-colors.sh"  "$HOME/.config/hypr/scripts/generate-theme-colors.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/generate-thunar-css.sh"    "$HOME/.config/hypr/scripts/generate-thunar-css.sh"
-chmod +x "$HOME/.config/hypr/scripts/"*.sh
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-theme.sh"        "$HOME/.config/hypr/scripts/generation/generate-theme.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-colors.sh"        "$HOME/.config/hypr/scripts/generation/generate-colors.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-theme-colors.sh"  "$HOME/.config/hypr/scripts/generation/generate-theme-colors.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-thunar-css.sh"    "$HOME/.config/hypr/scripts/generation/generate-thunar-css.sh"
+
+chmod +x "$HOME/.config/hypr/scripts/idle/"*.sh
+chmod +x "$HOME/.config/hypr/scripts/media/"*.sh
+chmod +x "$HOME/.config/hypr/scripts/clipboard/"*.sh
+chmod +x "$HOME/.config/hypr/scripts/generation/"*.sh
 
 log "Copying wallpaper..."
 copy_plain "$CONFIG_SRC/hypr/wallpapers/wallpaper.png" "$HOME/.config/hypr/wallpapers/wallpaper.png"
@@ -127,9 +130,9 @@ fi
 copy_plain "$CONFIG_SRC/yazi/."        "$HOME/.config/yazi"
 
 log "Running theme generators to produce initial derived configs..."
-bash "$HOME/.config/hypr/scripts/generate-theme.sh"
-bash "$HOME/.config/hypr/scripts/generate-colors.sh"
-bash "$HOME/.config/hypr/scripts/generate-theme-colors.sh"
-bash "$HOME/.config/hypr/scripts/generate-thunar-css.sh"
+bash "$HOME/.config/hypr/scripts/geneartion/generate-theme.sh"
+bash "$HOME/.config/hypr/scripts/geneartion/generate-colors.sh"
+bash "$HOME/.config/hypr/scripts/geneartion/generate-theme-colors.sh"
+bash "$HOME/.config/hypr/scripts/geneartion/generate-thunar-css.sh"
 
 log "Dotfiles copy stage complete."
