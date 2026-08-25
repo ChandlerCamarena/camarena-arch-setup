@@ -113,8 +113,8 @@ copy_plain "$CONFIG_SRC/zsh/."         "$HOME/.config/zsh"
 
 log "Installing oh-my-zsh framework (not vendored, reinstalled fresh)..."
 if [[ ! -d "$HOME/.config/zsh/oh-my-zsh" ]]; then
-    ZDOTDIR="$HOME/.config/zsh" RUNZSH=no CHSH=no \
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    ZDOTDIR="$HOME/.config/zsh" RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 else
     log "oh-my-zsh already present, skipping."
 fi
