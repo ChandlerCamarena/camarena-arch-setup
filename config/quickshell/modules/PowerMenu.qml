@@ -8,9 +8,9 @@ FocusScope {
     readonly property int cols: 3
     readonly property int rows: 2
     readonly property var actions: [
+        { label: "REBOOT",    cmd: "systemctl reboot" },
         { label: "LOCK",      cmd: "loginctl lock-session" },
         { label: "SUSPEND",   cmd: "systemctl suspend" },
-        { label: "REBOOT",    cmd: "systemctl reboot" },
         { label: "SHUTDOWN",  cmd: "systemctl poweroff" },
         { label: "LOGOUT",    cmd: "loginctl kill-session $XDG_SESSION_ID" },
         { label: "HIBERNATE", cmd: "systemctl hibernate" }
