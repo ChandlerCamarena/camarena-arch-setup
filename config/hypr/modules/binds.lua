@@ -18,7 +18,7 @@ hl.bind(M .. " + E",      hl.dsp.exec_cmd("thunar"))
 hl.bind(M .. " + C",      hl.dsp.exec_cmd("~/.config/rofi/launchers/type-1/launcher.sh"))
 
 --w is wallpaper
-hl.bind(M .. " + S",      hl.dsp.exec_cmd("spotify"))
+hl.bind(M .. " + S",      hl.dsp.exec_cmd("spotify-launcher"))
 
 hl.bind(M .. " + Q",      hl.dsp.exec_cmd("discord"))
 hl.bind(M .. " + z",      hl.dsp.exec_cmd("qs ipc call powermenu toggle"))
