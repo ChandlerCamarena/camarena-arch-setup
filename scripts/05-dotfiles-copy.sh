@@ -130,9 +130,9 @@ fi
 copy_plain "$CONFIG_SRC/yazi/."        "$HOME/.config/yazi"
 
 log "Running theme generators to produce initial derived configs..."
-bash "$HOME/.config/hypr/scripts/geneartion/generate-theme.sh"
-bash "$HOME/.config/hypr/scripts/geneartion/generate-colors.sh"
-bash "$HOME/.config/hypr/scripts/geneartion/generate-theme-colors.sh"
-bash "$HOME/.config/hypr/scripts/geneartion/generate-thunar-css.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-theme.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-colors.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-theme-colors.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-thunar-css.sh"
 
 log "Dotfiles copy stage complete."
