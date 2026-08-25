@@ -11,3 +11,4 @@ config/yazi/theme.toml
 config/kitty/colors-generated.conf
 config/nvim/lua/theme-colors.lua
 config/gtk-3.0/gtk.css
+config/hypr/hyprlock.conf
