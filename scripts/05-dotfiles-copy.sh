@@ -127,7 +127,7 @@ else
     log "powerlevel10k already present, skipping."
 fi
 
-copy_plain "$CONFIG_SRC/yazi/."        "$HOME/.config/yazi"
+mkdir -p "$HOME/.config/yazi"
 
 log "Running theme generators to produce initial derived configs..."
 bash "$HOME/.config/hypr/scripts/generation/generate-theme.sh"
