@@ -80,7 +80,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(git)
 
 DISABLE_MAGIC_FUNCTIONS=true
-source $ZSH/ohmyzsh/ohmyzsh.sh
+source $ZSH/oh-my-zsh.sh
 HISTFILE="$ZDOTDIR/.zsh_history"
 
 # User configuration
