@@ -135,6 +135,5 @@ bash "$HOME/.config/hypr/scripts/generation/generate-theme.sh"
 bash "$HOME/.config/hypr/scripts/generation/generate-colors.sh"
 bash "$HOME/.config/hypr/scripts/generation/generate-theme-colors.sh"
 bash "$HOME/.config/hypr/scripts/generation/generate-thunar-css.sh"
-bash "$HOME/.config/hypr/scripts/generation/generate-hyprlock.sh"
 
 log "Dotfiles copy stage complete."
