@@ -24,7 +24,24 @@ FAIL_X_PCT=99.6;    FAIL_Y_PCT=-15.6
 FOOTER_X_PCT=99.6;  FOOTER_Y_PCT=-22.2
 
 # Focused monitor's logical (post-scale) resolution via hyprctl.
-mon_json=$(hyprctl monitors -j | python3 -c '
+# This only works with a live Hyprland session (a running
+# compositor with HYPRLAND_INSTANCE_SIGNATURE set and an IPC
+# socket). During install.sh's dotfiles-copy stage there is no
+# session yet, so this must NOT be called from there -- call it
+# from hyprland's autostart (exec-once) after the compositor is up,
+# and rely on monitors.lua's monitor.added/removed hooks after that.
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || ! command -v hyprctl >/dev/null 2>&1; then
+    echo "[generate-hyprlock] no live Hyprland session, falling back to 2560x1440 default" >&2
+    width=2560
+    height=1440
+else
+    raw=$(hyprctl monitors -j 2>/dev/null || true)
+    if [[ -z "$raw" ]]; then
+        echo "[generate-hyprlock] hyprctl monitors -j returned nothing, falling back to 2560x1440 default" >&2
+        width=2560
+        height=1440
+    else
+        mon_json=$(echo "$raw" | python3 -c '
 import json,sys
 mons = json.load(sys.stdin)
 m = next((m for m in mons if m.get("focused")), mons[0])
@@ -32,7 +49,9 @@ w = m["width"] / m["scale"]
 h = m["height"] / m["scale"]
 print(f"{w} {h}")
 ')
-read -r width height <<< "$mon_json"
+        read -r width height <<< "$mon_json"
+    fi
+fi
 
 half_w=$(echo "$width / 2" | bc -l)
 half_h=$(echo "$height / 2" | bc -l)
@@ -56,4 +75,3 @@ sed \
   "$TEMPLATE" > "$OUT"
 
 echo "[generate-hyprlock] wrote $OUT for ${width%.*}x${height%.*}"
-chmod +x ~/camarena-arch-setup/config/hypr/scripts/generation/generate-hyprlock.sh
