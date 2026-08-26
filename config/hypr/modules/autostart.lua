@@ -7,6 +7,10 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("hyprpolkitagent")
   -- Idle daemon
   hl.exec_cmd("hypridle -c ~/.config/hypr/hypridle.conf")
+  -- Resolve hyprlock.conf from its template now that a live
+  -- session (and hyprctl) actually exists. monitors.lua's
+  -- monitor.added/removed hooks keep it in sync after this.
+  hl.exec_cmd("bash ~/.config/hypr/scripts/generation/generate-hyprlock.sh >/tmp/generate-hyprlock.log 2>&1")
   -- Clipboard backend
   hl.exec_cmd("wl-paste --type text --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
