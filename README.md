@@ -1,4 +1,3 @@
-cat > README.md << 'EOF'
 # camarena-arch-setup
 
 Single source of truth for my Arch Linux desktop environment.
@@ -120,4 +119,3 @@ PRIME/NVIDIA environment variables are hostname-gated in `uwsm/env-hyprland`, so
 ## License
 
 See `LICENSE`. Departure Mono is separately licensed under the OFL — see `fonts/OFL.txt`. The SDDM theme (`config/sddm/retrowave/`) is derived from Sanjeev Premi's "maya" theme, MIT-licensed — original license retained at `config/sddm/retrowave/LICENSE`.
-EOF
