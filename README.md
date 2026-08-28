@@ -9,14 +9,14 @@ Automates full reproduction of a Hyprland + Quickshell desktop, from a bare Arch
 - **WM**: Hyprland, custom fork with a Lua config layer (`hl.*` namespace) instead of the stock keyword-file config
 - **Shell**: Quickshell (QML), built from source — dashboard, taskbar, notifications, OSDs, rice switching
 - **Session**: UWSM for systemd-managed session lifecycle, SDDM for login (custom retrowave QML theme, reads `theme.json` live)
-- **GPU**: NVIDIA (`nvidia-open`), PRIME hybrid graphics on the laptop target; discrete NVIDIA (RTX 4080) on the desktop target (`prometheus`)
+- **GPU**: NVIDIA (`nvidia-open`), PRIME hybrid graphics on the laptop target;
 - **Filesystem**: btrfs on both root drives, `@`/`@home`/`@log`/`@pkg`/`@snapshots` subvolume layout, snapper-managed, systemd-boot
 - **Terminal/editor**: Kitty, Neovim (lazy.nvim, native `vim.lsp.config`)
 - **Shell environment**: zsh via oh-my-zsh, powerlevel10k prompt, `ZDOTDIR` relocated to `~/.config/zsh`
 - **File management**: Yazi (terminal), Thunar (GUI)
 - **Browser**: Vivaldi
 - **Launcher**: Rofi, custom retrowave-themed launcher and power menu
-- **Communication**: Discord, Teams (Flatpak), Spotify (Flatpak)
+- **Communication**: Discord, Teams (Flatpak), Spotify
 - **Gaming**: Steam, MangoHud (multilib)
 - **VPN**: Surfshark via raw WireGuard configs — no GUI/CLI client installed
 - **Peripherals**: Xbox controller support via xpadneo, built from source (DKMS)
@@ -42,7 +42,7 @@ Official Arch repos, source builds, or GitHub release tarballs only — no AUR h
 
 ## Before you start
 
-This repo assumes you're picking up *after* a working, booted, networked Arch base install. It does not partition disks, run `pacstrap`, or configure a bootloader — that's manual, deliberate, and done once per machine before this repo ever gets cloned.
+This repo assumes you're picking up *after* a working, booted, networked Arch base install. It does not partition disks, run `pacstrap`, or configure a bootloader.
 
 **Prerequisites, in order:**
 
