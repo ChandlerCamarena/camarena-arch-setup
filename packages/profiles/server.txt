@@ -1,0 +1,17 @@
+# server.txt
+# You confirmed desktop stack always installs regardless of profile,
+# so this is purely additive service/hosting tooling for when this
+# machine also needs to run server-side workloads.
+#
+# openssh          - sshd, remote shell access to this machine
+# nginx            - reverse proxy / static file server
+# rsync            - efficient file sync, for backups or deploys
+# cronie           - cron daemon, Arch doesn't ship one by default
+# nftables         - firewall, matches the raw-nftables approach
+#                    already used on the Pi VPN gateway rather than
+#                    pulling in a second abstraction layer (ufw)
+cronie
+nftables
+nginx
+openssh
+rsync

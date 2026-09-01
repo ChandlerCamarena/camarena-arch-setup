@@ -1,0 +1,18 @@
+# gaming.txt
+# steam            - primary game store/runtime, Proton compatibility layer
+# gamescope        - Valve's micro-compositor, nested session for per-game
+#                    resolution/scaling/HDR handling independent of Hyprland
+# gamemode         - Feral's daemon, requests CPU governor/priority bumps
+#                    while a game runs, releases them on exit
+# mangohud         - in-game FPS/frametime/temps overlay
+# lib32-mangohud   - 32-bit MangoHud, needed for older/32-bit Steam titles
+# prismlauncher    - Minecraft instance manager/launcher
+# wine             - Windows binary compatibility, used here for
+#                    non-Steam/non-Proton Windows game and launcher support
+gamemode
+gamescope
+lib32-mangohud
+mangohud
+prismlauncher
+steam
+wine

@@ -1,0 +1,7 @@
+# personal.txt
+# discord          - voice/text chat client
+# spotify-launcher - installs/updates Spotify's own client via their
+#                    official distribution mechanism (not a repackaged
+#                    Spotify binary, avoids AUR)
+discord
+spotify-launcher

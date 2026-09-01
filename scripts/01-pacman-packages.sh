@@ -19,6 +19,7 @@ section "PACMAN"
 
 HOOK_SRC="$SCRIPT_DIR/../config/pacman-hooks/00-snapshot.hook"
 HOOK_DEST="/etc/pacman.d/hooks/00-snapshot.hook"
+
 if [[ -f "$HOOK_SRC" ]]; then
     log "Installing snapper pre-transaction snapshot hook..."
     sudo mkdir -p "$(dirname "$HOOK_DEST")"
@@ -35,17 +36,35 @@ else
     log "multilib already enabled, skipping."
 fi
 
-PACMAN_PKGLIST="$SCRIPT_DIR/../packages/pacman-packages.txt"
-if [[ ! -f "$PACMAN_PKGLIST" ]]; then
-    err "Package list not found at $PACMAN_PKGLIST"
+BASE_PKGLIST="$SCRIPT_DIR/../packages/base.txt"
+PROFILES_DIR="$SCRIPT_DIR/../packages/profiles"
+
+if [[ ! -f "$BASE_PKGLIST" ]]; then
+    err "Base package list not found at $BASE_PKGLIST"
     exit 1
 fi
+
+PACMAN_PKGLIST_TMP="$(mktemp)"
+trap 'rm -f "$PACMAN_PKGLIST_TMP"' EXIT
+
+cat "$BASE_PKGLIST" >> "$PACMAN_PKGLIST_TMP"
+
+for profile in ${CAS_PROFILES:-}; do
+    profile_file="$PROFILES_DIR/${profile}.txt"
+    if [[ -f "$profile_file" ]]; then
+        log "Adding pacman packages for profile: $profile"
+        cat "$profile_file" >> "$PACMAN_PKGLIST_TMP"
+    else
+        err "No pacman package list for profile '$profile' at $profile_file, skipping"
+    fi
+done
 
 log "Updating package databases..."
 sudo pacman -Sy
 
-log "Installing packages from $PACMAN_PKGLIST..."
-mapfile -t pacman_packages < <(grep -vE '^\s*#|^\s*$' "$PACMAN_PKGLIST")
+mapfile -t pacman_packages < <(grep -vE '^\s*#|^\s*$' "$PACMAN_PKGLIST_TMP" | sort -u)
+
+log "Installing ${#pacman_packages[@]} packages..."
 sudo pacman -S --needed --noconfirm "${pacman_packages[@]}"
 
 section_done "PACMAN"
@@ -54,8 +73,9 @@ section_done "PACMAN"
 section "FLATPAK"
 
 FLATPAK_PKGLIST="$SCRIPT_DIR/../packages/flatpak-packages.txt"
+
 if ! command_exists flatpak; then
-    err "flatpak binary not found after pacman section. Check that 'flatpak' is listed in pacman-packages.txt."
+    err "flatpak binary not found after pacman section. Check that 'flatpak' is listed in base.txt."
     exit 1
 fi
 
@@ -83,20 +103,5 @@ for app in "${flatpak_apps[@]}"; do
 done
 
 section_done "FLATPAK"
-
-# ---------------------------------------------------------------------------
-section "AUX (Vulkan/Datum)"
-
-AUX_PKGLIST="$SCRIPT_DIR/../packages/vulkan-datum-packages.txt"
-if [[ ! -f "$AUX_PKGLIST" ]]; then
-    err "Vulkan/Datum package list not found at $AUX_PKGLIST"
-    exit 1
-fi
-
-log "Installing Vulkan/Datum toolchain packages from $AUX_PKGLIST..."
-mapfile -t aux_packages < <(grep -vE '^\s*#|^\s*$' "$AUX_PKGLIST")
-sudo pacman -S --needed --noconfirm "${aux_packages[@]}"
-
-section_done "AUX (Vulkan/Datum)"
 
 log "Package preparation stage complete."

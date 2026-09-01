@@ -7,15 +7,18 @@ require_not_root
 QS_SRC_DIR="$HOME/.local/src/quickshell"
 QS_BUILD_MARKER="$QS_SRC_DIR/.last-built-commit"
 mkdir -p "$(dirname "$QS_SRC_DIR")"
+
 if [[ ! -d "$QS_SRC_DIR" ]]; then
     log "Cloning QuickShell..."
     git clone https://github.com/quickshell-mirror/quickshell.git "$QS_SRC_DIR"
 fi
+
 cd "$QS_SRC_DIR"
 log "Fetching latest QuickShell source..."
 git fetch origin
 REMOTE_HEAD="$(git rev-parse origin/master)"
 LOCAL_BUILT="$(cat "$QS_BUILD_MARKER" 2>/dev/null || echo "none")"
+
 if [[ "$REMOTE_HEAD" != "$LOCAL_BUILT" ]]; then
     log "Building QuickShell ($LOCAL_BUILT -> $REMOTE_HEAD)..."
     git checkout master
@@ -56,3 +59,20 @@ else
     log "Installing xpadneo via its own install script (runs dkms add/build/install)..."
     (cd "$XPADNEO_SRC_DIR" && sudo ./install.sh)
 fi
+
+# ---------------------------------------------------------------------------
+# Profile-specific build-from-source steps. Base builds above always run.
+# Each active profile's scripts/lib/builds/<profile>.sh, if present, is
+# sourced and its run_<profile>_builds function is called.
+BUILD_LIB_DIR="$SCRIPT_DIR/lib/builds"
+
+for profile in ${CAS_PROFILES:-}; do
+    profile_build_script="$BUILD_LIB_DIR/${profile}.sh"
+    if [[ -f "$profile_build_script" ]]; then
+        log "Running build-from-source steps for profile: $profile"
+        source "$profile_build_script"
+        "run_${profile}_builds"
+    fi
+done
+
+log "Build-from-source stage complete."

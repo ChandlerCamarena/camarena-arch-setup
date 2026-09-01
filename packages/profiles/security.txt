@@ -1,0 +1,28 @@
+# security.txt
+# nmap             - network discovery/port scanning
+# wireshark-qt     - packet capture/analysis GUI, directly relevant to
+#                    your Pi VPN gateway nftables isolation verification
+# tcpdump          - CLI packet capture, scriptable, lighter than
+#                    Wireshark for quick checks or headless capture
+# netcat           - raw TCP/UDP read/write, basic connectivity testing
+# john             - password hash cracking (John the Ripper)
+# hashcat          - GPU-accelerated hash cracking, worth having given
+#                    you've got an RTX 4080 to actually use for it
+# radare2          - reverse engineering / binary analysis framework,
+#                    ties to your stated interest in future RE work
+# binwalk          - firmware/binary blob analysis, extracting embedded
+#                    filesystems and file signatures out of images
+# ruby             - required to build Metasploit from source (this
+#                    profile's build-from-source step, not a pacman
+#                    package for Metasploit itself)
+# postgresql       - Metasploit's database backend (msfdb)
+binwalk
+hashcat
+john
+netcat
+nmap
+postgresql
+radare2
+ruby
+tcpdump
+wireshark-qt

@@ -1,0 +1,39 @@
+# virt.txt
+# qemu-full        - QEMU with the full device/accelerator set (not
+#                    qemu-base), needed for anything beyond the most
+#                    trivial VM (audio, USB passthrough, etc.)
+# libvirt          - virtualization management daemon (libvirtd), the
+#                    API layer virt-manager and virsh talk to; also owns
+#                    the default NAT virtual network for VM networking
+# virt-manager     - GTK GUI for creating/managing VMs, snapshots, and
+#                    virtual networks through libvirt
+# virt-viewer      - lightweight SPICE/VNC display client, useful for
+#                    connecting to a VM's display without opening the
+#                    full virt-manager GUI
+# edk2-ovmf        - UEFI firmware for VMs; required for any modern
+#                    guest OS install and for Secure Boot / TPM-gated
+#                    installs (e.g. Windows 11)
+# swtpm            - software TPM 2.0 emulation, paired with edk2-ovmf
+#                    for guests that check for a TPM at install/boot
+# dnsmasq          - provides DHCP/DNS for libvirt's default NAT
+#                    network; libvirtd depends on this to hand VMs an
+#                    IP automatically
+# bridge-utils     - bridge networking tools, needed if you want a VM
+#                    on the same subnet as the host (bridged) rather
+#                    than NATed
+# spice-vdagent    - guest-side agent for clipboard sharing and dynamic
+#                    resolution resizing in SPICE-displayed VMs
+# libguestfs       - inspect/mount/edit VM disk images from the host
+#                    without booting the VM (useful for a fresh Arch
+#                    install.sh validation loop: build image, poke at
+#                    it, blow it away, repeat)
+bridge-utils
+dnsmasq
+edk2-ovmf
+libguestfs
+libvirt
+qemu-full
+spice-vdagent
+swtpm
+virt-manager
+virt-viewer

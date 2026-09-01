@@ -1,0 +1,34 @@
+# dev.txt
+# General-purpose dev toolchain, separate from Datum's graphics-driver
+# specific packages. clang/cmake/ninja/rust/git are already in base.
+#
+# docker           - container runtime
+# docker-compose   - multi-container orchestration on top of docker
+# nodejs           - JS runtime, needed for any web tooling or QML/JS
+#                    adjacent scripting outside Quickshell itself
+# npm              - node package manager, ships separately on Arch
+# go               - Go toolchain, if you touch any Go-based CLI tools
+#                    or want it for future projects
+# postgresql       - relational DB server, for local dev databases
+# sqlite           - embedded DB, lighter weight than spinning up
+#                    postgres for quick scripts/prototypes
+# direnv           - per-directory env var loading, useful for keeping
+#                    project-scoped Nix devShells/flakes (per your
+#                    existing Nix scoping rule) from leaking into the
+#                    global shell
+# shellcheck       - static analysis for your bash stage scripts, would
+#                    directly catch mistakes in this install pipeline
+# gdb              - C/C++ debugger
+# valgrind         - memory error/leak detector, relevant given your
+#                    weak spot is C++ specifically
+direnv
+docker
+docker-compose
+gdb
+go
+nodejs
+npm
+postgresql
+shellcheck
+sqlite
+valgrind

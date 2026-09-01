@@ -1,4 +1,3 @@
-
 7zip
 alsa-utils
 aria2
@@ -17,7 +16,6 @@ cmake
 # Core desktop environment packages. Vulkan/Project-Datum toolchain
 cpptrace
 dart-sass
-discord
 dkms
 dolphin
 dosfstools
@@ -26,8 +24,6 @@ evince
 eza
 firefox
 flatpak
-gamemode
-gamescope
 ghostty
 git
 github-cli
@@ -45,15 +41,13 @@ intel-ucode
 jemalloc
 jq
 kitty
-lib32-mangohud
 libva-nvidia-driver
 linux
 linux-firmware
 linux-headers
-# lives in vulkan-datum-packages.txt, kept separate on purpose.
+# lives in datum-packages.txt, kept separate on purpose.
 llvm21
 man-db
-mangohud
 man-pages
 mpv
 mpv-mpris
@@ -76,7 +70,6 @@ pavucontrol
 pipewire-pulse
 pkgconf
 playerctl
-prismlauncher
 python-pip
 qt5-wayland
 qt6-base
@@ -90,8 +83,6 @@ sddm
 slurp
 snapper
 socat
-spotify-launcher
-steam
 sudo
 thunar
 thunar-archive-plugin
@@ -106,7 +97,6 @@ vulkan-headers
 vulkan-tools
 wayland-protocols
 wget
-wine
 wireplumber
 wl-clipboard
 xarchiver

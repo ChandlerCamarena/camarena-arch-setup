@@ -24,6 +24,11 @@ require_arch() {
     fi
 }
 
+profile_active() {
+    local target="$1"
+    [[ " ${CAS_PROFILES:-} " == *" $target "* ]]
+}
+
 backup_if_exists() {
     local target="$1"
     if [[ -e "$target" && ! -L "$target" ]]; then

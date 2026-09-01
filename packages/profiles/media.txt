@@ -1,0 +1,15 @@
+# media.txt
+# obs-studio        - screen/window capture and streaming, the actual
+#                    recording tool for demoing Datum/portfolio work
+# ffmpeg            - command-line encode/transcode/clip tool, also a
+#                    hard dependency of OBS and mpv under the hood but
+#                    worth having explicitly for scripting cuts/exports
+# v4l2loopback-dkms - creates a virtual video device (/dev/videoN) that
+#                    OBS can output to, so other apps (browser video
+#                    calls, etc.) can use OBS as a "camera" source
+# handbrake         - GUI video transcoder, useful for compressing
+#                    recorded footage down before uploading/sharing
+ffmpeg
+handbrake
+obs-studio
+v4l2loopback-dkms
