@@ -45,6 +45,7 @@ log "grimblast installed to $HOME/.local/bin/grimblast"
 
 log "Installing xpadneo (Xbox controller Bluetooth DKMS driver, AUR-only upstream, built from source instead)..."
 XPADNEO_SRC_DIR="$HOME/.local/src/xpadneo"
+XPADNEO_BUILD_MARKER="$XPADNEO_SRC_DIR/.last-built-commit"
 if [[ ! -d "$XPADNEO_SRC_DIR" ]]; then
     log "Cloning xpadneo..."
     git clone https://github.com/atar-axis/xpadneo.git "$XPADNEO_SRC_DIR"
@@ -53,11 +54,19 @@ else
     git -C "$XPADNEO_SRC_DIR" pull --ff-only
 fi
 
-if sudo dkms status | grep -q '^hid-xpadneo'; then
-    log "xpadneo DKMS module already registered, skipping install."
+XPADNEO_REMOTE_HEAD="$(git -C "$XPADNEO_SRC_DIR" rev-parse HEAD)"
+XPADNEO_LOCAL_BUILT="$(cat "$XPADNEO_BUILD_MARKER" 2>/dev/null || echo "none")"
+
+if sudo dkms status | grep -q '^hid-xpadneo' && [[ "$XPADNEO_REMOTE_HEAD" == "$XPADNEO_LOCAL_BUILT" ]]; then
+    log "xpadneo DKMS module already registered and up to date ($XPADNEO_LOCAL_BUILT), skipping."
 else
+    if sudo dkms status | grep -q '^hid-xpadneo'; then
+        log "xpadneo source updated ($XPADNEO_LOCAL_BUILT -> $XPADNEO_REMOTE_HEAD), removing old DKMS module before reinstall..."
+        (cd "$XPADNEO_SRC_DIR" && sudo ./uninstall.sh) || err "xpadneo uninstall.sh failed or not present; attempting install over existing module."
+    fi
     log "Installing xpadneo via its own install script (runs dkms add/build/install)..."
     (cd "$XPADNEO_SRC_DIR" && sudo ./install.sh)
+    echo "$XPADNEO_REMOTE_HEAD" > "$XPADNEO_BUILD_MARKER"
 fi
 
 # ---------------------------------------------------------------------------

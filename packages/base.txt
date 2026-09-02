@@ -81,7 +81,6 @@ rofi
 rust
 sddm
 slurp
-snapper
 socat
 sudo
 thunar
