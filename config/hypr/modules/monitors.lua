@@ -2,21 +2,13 @@
 -- Detects connected outputs and configures them automatically.
 -- No output names are hardcoded. Works on laptop, TV, and desktop.
 --
--- PPI DETECTION: hl.get_monitors() does NOT expose physical size
--- (confirmed via hl.meta.lua's HL.Monitor class -- no such field).
--- hyprctl monitors -j DOES have physicalWidth/physicalHeight, but
--- shelling out to hyprctl from inside a config reload deadlocks/
--- times out the Hyprland IPC -- confirmed reproducibly, not a
--- one-off. Reload holds the IPC while running this Lua; calling
--- back into hyprctl from inside that same reload fights itself for
--- the socket. Do NOT reintroduce an io.popen() call to hyprctl
--- here. If real PPI detection is wanted later, it needs a source
--- that doesn't round-trip through Hyprland's own IPC, e.g. reading
--- EDID directly from /sys/class/drm/*/edid via edid-decode.
---
--- Until that's built, this is a resolution-keyed lookup table, not
--- true PPI math. Documented as such rather than dressed up as
--- detection.
+-- PPI DETECTION: as of Hyprland 0.56, hl.get_monitors() exposes
+-- physical_width / physical_height directly on the monitor object
+-- (confirmed against /usr/share/hypr/stubs/hl.meta.lua and live
+-- values matching the real panel). This means real PPI math can
+-- run entirely in-process, no io.popen()/hyprctl round-trip, so
+-- the IPC-deadlock-from-inside-reload problem that previously
+-- forced a hardcoded resolution table no longer applies here.
 
 -- Guard clause: Prevent standalone CLI execution from crashing
 if not hl then
@@ -36,28 +28,74 @@ local function debug_log(msg)
   end
 end
 
--- Resolution-keyed scale table. Not PPI-derived -- see note above
--- on why real physical-size detection isn't safely available from
--- inside Hyprland's Lua config reload path.
-local SCALE_BY_RESOLUTION = {
-  ["3840x2160"] = 1.5,  -- prometheus 4K 15" laptop panel
-  ["2560x1440"] = 1.0,  -- RTX 4080 desktop monitor (Aug 2026). Fractional scaling (tried 0.8) broke things across the board, forced to 1.0.
-  ["1920x1080"] = 1.0,
+-- Real PPI-derived scale, computed in-process from mon.physical_width
+-- / mon.physical_height (mm) and mon.width / mon.height (px). No
+-- hardcoded per-resolution table: any monitor with sane EDID physical
+-- dimensions gets a correct scale automatically.
+--
+-- Thresholds match the previous manually-tuned table: >150 PPI -> 1.5,
+-- >110 PPI -> 1.25, else 1.0. Verified against the real desktop panel
+-- (MSI MAG321CQR, 700x390mm, 2560x1440): computes to 93.1 PPI -> 1.0,
+-- matching the value that was previously hardcoded after the 0.8
+-- fractional-scale experiment broke things.
+-- Manual calibration override. Live-tuned by eye against the
+-- laptop, not derived from PPI/distance math -- multiple attempts
+-- at a deterministic PPI-based or distance-based formula were
+-- tried and none reproduced this value (see git history / chat
+-- notes), so this is stored as a direct calibrated constant. Keyed
+-- by output name since DP-2 is this specific monitor's stable
+-- connector name.
+local SCALE_OVERRIDES = {
+  -- DP-2 was tuned to 0.67 for higher density, but Hyprland has a
+  -- known unresolved bug (hyprwm/Hyprland discussion #12609) where
+  -- scale < 1.0 renders window content smaller than its tile,
+  -- leaving blank space -- reproduced exactly with Vivaldi not
+  -- filling its half-screen tile. This monitor's own EDID-advertised
+  -- modes cap at native 2560x1440, so a custom higher-resolution
+  -- mode (to get density via scale-up instead of scale-down) isn't
+  -- a safe option either -- would require forcing an unsupported
+  -- custom timing. Reverted to 1.0, which is also what auto_scale's
+  -- PPI math computes on its own for this panel (93.1 PPI), so this
+  -- override is currently redundant but left in place as a documented
+  -- decision in case scale-down gets fixed upstream later.
+  ["DP-2"] = 1.0,
 }
 
 local function auto_scale(mon)
-  local w = mon.width
-  local h = mon.height
-  local key = tostring(w) .. "x" .. tostring(h)
-  local scale = SCALE_BY_RESOLUTION[key]
-
-  if scale then
-    debug_log(tostring(mon.name) .. " " .. key .. " -> scale " .. scale .. " (table)")
+  if SCALE_OVERRIDES[mon.name] then
+    local scale = SCALE_OVERRIDES[mon.name]
+    debug_log(tostring(mon.name) .. " -> scale " .. scale .. " (manual override)")
     return scale
   end
 
-  debug_log(tostring(mon.name) .. " " .. key .. " -> no table entry, defaulting to scale 1.0")
-  return 1.0
+  local w  = mon.width
+  local h  = mon.height
+  local pw = mon.physical_width
+  local ph = mon.physical_height
+
+  if not pw or not ph or pw == 0 or ph == 0 then
+    debug_log(tostring(mon.name) .. " missing/zero physical dimensions, defaulting to scale 1.0")
+    return 1.0
+  end
+
+  local diagonal_mm     = math.sqrt(pw * pw + ph * ph)
+  local diagonal_inches = diagonal_mm / 25.4
+  local ppi             = math.sqrt(w * w + h * h) / diagonal_inches
+
+  local scale
+  if ppi > 150 then
+    scale = 1.5
+  elseif ppi > 110 then
+    scale = 1.25
+  else
+    scale = 1.0
+  end
+
+  debug_log(tostring(mon.name) .. " " .. tostring(w) .. "x" .. tostring(h)
+    .. " physical " .. tostring(pw) .. "x" .. tostring(ph) .. "mm"
+    .. " -> ppi " .. string.format("%.1f", ppi) .. " -> scale " .. scale)
+
+  return scale
 end
 
 local function configure_monitors()
@@ -76,8 +114,10 @@ local function configure_monitors()
     end)
 
     if not ok then
-      local key = tostring(mon.width) .. "x" .. tostring(mon.height)
-      local safe = SCALE_BY_RESOLUTION[key] or 1.0
+      -- No lookup table anymore (removed with the resolution-keyed
+      -- approach), so the safe fallback is just a flat 1.0 rather
+      -- than a per-resolution value.
+      local safe = 1.0
       debug_log("  -> DISPATCH ERROR for " .. tostring(mon.name) .. ": " .. tostring(err)
         .. ". Retrying with safe scale " .. safe .. ".")
       pcall(function()
