@@ -41,7 +41,7 @@ end
 -- inside Hyprland's Lua config reload path.
 local SCALE_BY_RESOLUTION = {
   ["3840x2160"] = 1.5,  -- prometheus 4K 15" laptop panel
-  ["2560x1440"] = 1.0,  -- RTX 4080 desktop monitor (Aug 2026) -- verify against real panel size before trusting this
+  ["2560x1440"] = 1.0,  -- RTX 4080 desktop monitor (Aug 2026). Fractional scaling (tried 0.8) broke things across the board, forced to 1.0.
   ["1920x1080"] = 1.0,
 }
 
@@ -95,12 +95,23 @@ end
 -- Run on startup
 configure_monitors()
 
+-- Regenerate hyprlock.conf for the new resolution/scale after any
+-- monitor change. Safe to call here: this runs from the
+-- monitor.added/removed event handler, not from inside a config
+-- reload, so it does not hit the hyprctl-from-reload IPC deadlock
+-- documented above for auto_scale.
+local function regenerate_hyprlock()
+  hl.exec_cmd("bash ~/.config/hypr/scripts/generation/generate-hyprlock.sh >/tmp/generate-hyprlock.log 2>&1")
+end
+
 -- Run when a monitor is plugged in
 hl.on("monitor.added", function(mon)
   configure_monitors()
+  regenerate_hyprlock()
 end)
 
 -- Run when a monitor is unplugged
 hl.on("monitor.removed", function(mon)
   configure_monitors()
+  regenerate_hyprlock()
 end)
