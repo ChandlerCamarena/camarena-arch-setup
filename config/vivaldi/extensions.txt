@@ -1,0 +1,9 @@
+# extensions.txt
+# Vivaldi/Chromium extension IDs, one per line, # for comments.
+# Find installed IDs at vivaldi://extensions with Developer Mode on
+# (ID shown under each extension's name).
+# Force-installed via Chromium ExtensionInstallForcelist policy at
+# install time -- pulls from the Chrome Web Store, not vendored here.
+#
+# example:
+# cjpalhdlnbpafiamejdnhcphjbkeiagm  # uBlock Origin
