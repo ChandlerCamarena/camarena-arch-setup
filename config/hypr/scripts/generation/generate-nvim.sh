@@ -6,7 +6,7 @@ OUT="$HOME/.config/nvim/lua/theme-colors.lua"
 c() { jq -r ".colors.$1" "$THEME"; }
 
 cat > "$OUT" << INNEREOF
--- Generated from theme.json by generate-theme-colors.sh. Do not edit by hand.
+-- Generated from theme.json by generate-nvim.sh. Do not edit by hand.
 return {
   bg          = "#$(c bg_dark)",
   bg_float    = "#$(c bg_float)",

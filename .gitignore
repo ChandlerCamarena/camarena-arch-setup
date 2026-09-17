@@ -13,3 +13,4 @@ config/nvim/lua/theme-colors.lua
 config/gtk-3.0/gtk.css
 config/hypr/hyprlock.conf
 config/hypr/hyprlock.conf
+config/rofi/colors/retrowave.rasi

@@ -64,10 +64,11 @@ copy_plain "$CONFIG_SRC/hypr/scripts/media/media-priority.sh" "$HOME/.config/hyp
 copy_plain "$CONFIG_SRC/hypr/scripts/clipboard/cliphist-rofi.sh"  "$HOME/.config/hypr/scripts/clipboard/cliphist-rofi.sh"
 
 log "Copying theme generator scripts (outputs are NOT committed, generated below)..."
-copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-theme.sh"        "$HOME/.config/hypr/scripts/generation/generate-theme.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-colors.sh"        "$HOME/.config/hypr/scripts/generation/generate-colors.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-theme-colors.sh"  "$HOME/.config/hypr/scripts/generation/generate-theme-colors.sh"
-copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-thunar-css.sh"    "$HOME/.config/hypr/scripts/generation/generate-thunar-css.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-yazi.sh"          "$HOME/.config/hypr/scripts/generation/generate-yazi.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-kitty.sh"         "$HOME/.config/hypr/scripts/generation/generate-kitty.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-nvim.sh"          "$HOME/.config/hypr/scripts/generation/generate-nvim.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-gtk.sh"           "$HOME/.config/hypr/scripts/generation/generate-gtk.sh"
+copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-rofi.sh"             "$HOME/.config/hypr/scripts/generation/generate-rofi.sh"
 copy_plain "$CONFIG_SRC/hypr/scripts/generation/generate-hyprlock.sh"      "$HOME/.config/hypr/scripts/generation/generate-hyprlock.sh"
 
 chmod +x "$HOME/.config/hypr/scripts/idle/"*.sh
@@ -131,10 +132,11 @@ fi
 mkdir -p "$HOME/.config/yazi"
 
 log "Running theme generators to produce initial derived configs..."
-bash "$HOME/.config/hypr/scripts/generation/generate-theme.sh"
-bash "$HOME/.config/hypr/scripts/generation/generate-colors.sh"
-bash "$HOME/.config/hypr/scripts/generation/generate-theme-colors.sh"
-bash "$HOME/.config/hypr/scripts/generation/generate-thunar-css.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-yazi.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-kitty.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-nvim.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-gtk.sh"
+bash "$HOME/.config/hypr/scripts/generation/generate-rofi.sh"
 
 
 log "Provisioning Vivaldi config..."

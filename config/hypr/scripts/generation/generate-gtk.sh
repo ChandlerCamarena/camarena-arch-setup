@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# generate-thunar-css.sh
+# generate-gtk.sh
 # Reads ~/.config/hypr/theme.json, substitutes tokens in the
 # gtk-template.css, writes the result to ~/.config/gtk-3.0/gtk.css.
 set -euo pipefail
@@ -9,11 +9,11 @@ TEMPLATE="$HOME/.config/gtk-3.0/gtk-template.css"
 OUTPUT="$HOME/.config/gtk-3.0/gtk.css"
 
 if [[ ! -f "$THEME_JSON" ]]; then
-  echo "generate-thunar-css.sh: $THEME_JSON not found" >&2
+  echo "generate-gtk.sh: $THEME_JSON not found" >&2
   exit 1
 fi
 if [[ ! -f "$TEMPLATE" ]]; then
-  echo "generate-thunar-css.sh: $TEMPLATE not found" >&2
+  echo "generate-gtk.sh: $TEMPLATE not found" >&2
   exit 1
 fi
 
@@ -33,4 +33,4 @@ for line in "${pairs[@]}"; do
 done
 
 mv "$tmp" "$OUTPUT"
-echo "generate-thunar-css.sh: wrote $OUTPUT"
+echo "generate-gtk.sh: wrote $OUTPUT"

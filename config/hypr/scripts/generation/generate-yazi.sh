@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# generate-theme.sh
+# generate-yazi.sh
 # Reads ~/.config/hypr/theme.json (single source of truth) and emits
 # ~/.config/yazi/theme.toml. Yazi has no live-reload and no scripting
 # in theme.toml itself (unlike theme.lua's jq-loader pattern for
@@ -30,7 +30,7 @@ fg_dim=$(jget '.colors.fg_dim')
 fg_subtle=$(jget '.colors.fg_subtle')
 
 cat > "$OUT" << TOML
-# Auto-generated from ~/.config/hypr/theme.json by generate-theme.sh
+# Auto-generated from ~/.config/hypr/theme.json by generate-yazi.sh
 # Do not hand-edit -- changes will be overwritten on next theme switch.
 
 [manager]
