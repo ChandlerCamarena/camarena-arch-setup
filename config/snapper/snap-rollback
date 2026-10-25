@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# snap-rollback - restore / from a snapper snapshot on the flat @ layout.
+#
+# `snapper rollback` can't do this with systemd-boot + rootflags=subvol=@
+# (see README, Known limitations), so this does the manual swap at the
+# btrfs top level. Both fstab and the boot entry mount @ by *name*, so
+# whatever subvolume is called @ at boot becomes /.
+#
+#   1. writable snapshot  @snapshots/<N>/snapshot -> @.rollback-new
+#   2. rename             @ -> @.pre-rollback-<stamp>   (kept until you delete it)
+#   3. rename             @.rollback-new -> @
+#   4. restore kernel/initramfs into /boot from the snapshot's /.bootbackup
+#      (current /boot files are saved into the old @ first)
+#
+# Safe to run on the live system: the running root is untouched until
+# reboot. Also works from a live USB: --device /dev/nvmeXnYpZ --boot /mnt/boot
+#
+# Not carried over: nested subvolumes inside @ (e.g. /var/lib/machines),
+# since btrfs snapshots don't recurse. They stay in the old @.
+set -euo pipefail
+shopt -s nullglob
+
+die()  { echo "snap-rollback: $*" >&2; exit 1; }
+info() { echo "snap-rollback: $*"; }
+
+usage() {
+    cat <<USAGE
+Usage: snap-rollback [options] <snapshot-number>
+       snap-rollback [options] --baseline
+       snap-rollback [options] --list
+
+  -l, --list           list root snapshots (* = baseline, see snap-baseline)
+  -B, --baseline       roll back to the newest baseline snapshot
+  -n, --dry-run        print every step, change nothing
+  -y, --yes            skip the confirmation prompt
+  -d, --device DEV     btrfs device holding @ (default: device backing /)
+  -b, --boot DIR       mounted ESP to restore the kernel into (default: /boot)
+  -h, --help
+USAGE
+}
+
+DEVICE="" BOOT="/boot" DRY=0 YES=0 LIST=0 BASELINE=0 NUM=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -l|--list) LIST=1; shift ;;
+        -B|--baseline) BASELINE=1; shift ;;
+        -n|--dry-run) DRY=1; shift ;;
+        -y|--yes) YES=1; shift ;;
+        -d|--device) DEVICE="$2"; shift 2 ;;
+        -b|--boot) BOOT="$2"; shift 2 ;;
+        -h|--help) usage; exit 0 ;;
+        -*) usage >&2; exit 1 ;;
+        *) NUM="$1"; shift ;;
+    esac
+done
+
+[[ $EUID -eq 0 ]] || die "must run as root (sudo snap-rollback ...)"
+[[ $LIST -eq 1 || $BASELINE -eq 1 || "$NUM" =~ ^[0-9]+$ ]] || { usage >&2; exit 1; }
+
+if [[ -z "$DEVICE" ]]; then
+    [[ "$(findmnt -no FSTYPE /)" == btrfs ]] || die "/ is not btrfs; pass --device"
+    DEVICE="$(findmnt -no SOURCE / | sed 's/\[.*//')"
+fi
+
+TOP="$(mktemp -d /run/snap-rollback.XXXXXX)"
+cleanup() { umount "$TOP" 2>/dev/null || true; rmdir "$TOP" 2>/dev/null || true; }
+trap cleanup EXIT
+mount -o subvolid=5 "$DEVICE" "$TOP"
+
+[[ -d "$TOP/@" && -d "$TOP/@snapshots" ]] || die "$DEVICE has no @ / @snapshots at its top level"
+
+field() { sed -n "s:.*<$1>\(.*\)</$1>.*:\1:p" "$2" | head -1; }
+# snap-baseline tags snapshots with snapper userdata baseline=yes
+is_baseline() { grep -q '<key>baseline</key>' "$1"; }
+
+if [[ $LIST -eq 1 ]]; then
+    printf '%-7s %-20s %-7s %s\n' NUM DATE TYPE DESCRIPTION
+    for xml in "$TOP"/@snapshots/*/info.xml; do
+        mark=" "; is_baseline "$xml" && mark="*"
+        printf '%-7s %-20s %-7s %s\n' "$(field num "$xml")$mark" "$(field date "$xml")" \
+            "$(field type "$xml")" "$(field description "$xml")"
+    done | sort -n
+    exit 0
+fi
+
+if [[ $BASELINE -eq 1 ]]; then
+    for xml in "$TOP"/@snapshots/*/info.xml; do
+        if is_baseline "$xml"; then
+            n="$(field num "$xml")"
+            if [[ -z "$NUM" || "$n" -gt "$NUM" ]]; then NUM="$n"; fi
+        fi
+    done
+    [[ -n "$NUM" ]] || die "no baseline snapshot found (create one with: sudo snap-baseline)"
+fi
+
+SRC="$TOP/@snapshots/$NUM/snapshot"
+XML="$TOP/@snapshots/$NUM/info.xml"
+[[ -d "$SRC" ]] || die "snapshot $NUM not found ($SRC)"
+[[ -e "$TOP/@.rollback-new" ]] && die "leftover $TOP/@.rollback-new from an interrupted run; inspect and delete it first"
+
+STAMP="$(date +%Y%m%d-%H%M%S)"
+OLD="@.pre-rollback-$STAMP"
+
+info "device:   $DEVICE"
+info "snapshot: $NUM  $(field date "$XML")  $(field type "$XML")  $(field description "$XML")"
+info "current @ will be kept as $OLD"
+if [[ -d "$SRC/.bootbackup" ]] && mountpoint -q "$BOOT"; then
+    info "kernel:   restoring $(ls "$SRC/.bootbackup" | tr '\n' ' ')into $BOOT"
+else
+    info "kernel:   WARNING no /.bootbackup in snapshot or $BOOT not mounted;"
+    info "          /boot stays as-is and may not match the snapshot's /usr/lib/modules"
+    info "          snapshot has modules: $(ls "$SRC/usr/lib/modules" 2>/dev/null | tr '\n' ' ')"
+fi
+
+if [[ $DRY -eq 0 && $YES -eq 0 ]]; then
+    read -rp "Proceed? [y/N] " ans
+    [[ "$ans" == [yY] ]] || die "aborted"
+fi
+
+run() { echo "+ $*"; [[ $DRY -eq 1 ]] || "$@"; }
+
+run btrfs subvolume snapshot "$SRC" "$TOP/@.rollback-new"
+run mv "$TOP/@" "$TOP/$OLD"
+run mv "$TOP/@.rollback-new" "$TOP/@"
+
+if [[ -d "$SRC/.bootbackup" ]] && mountpoint -q "$BOOT"; then
+    # save the /boot we're replacing so rolling forward again is possible
+    run mkdir -p "$TOP/$OLD/.bootbackup-at-rollback"
+    for f in "$BOOT"/vmlinuz-* "$BOOT"/initramfs-* "$BOOT"/*-ucode.img; do
+        run cp -p "$f" "$TOP/$OLD/.bootbackup-at-rollback/"
+    done
+    for f in "$SRC"/.bootbackup/*; do
+        run cp -p "$f" "$BOOT/"
+    done
+fi
+
+[[ $DRY -eq 1 ]] && { info "dry run, nothing changed"; exit 0; }
+info "done. Reboot to boot snapshot $NUM."
+info "once happy, remove the old root:"
+info "  sudo mount -o subvolid=5 $DEVICE /mnt && sudo btrfs subvolume delete /mnt/$OLD && sudo umount /mnt"

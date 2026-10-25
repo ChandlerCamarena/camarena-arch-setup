@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# snap-backup - take fresh root + home snapshots and copy them to the
+# backup drive with snbk (btrfs send/receive).
+#
+# The drive is any btrfs filesystem labelled CAS-BACKUP, so it can be swapped
+# without editing anything. Transfers are incremental: snbk sends each
+# snapshot as a diff against one already on the drive, so only the first run
+# copies everything. transfer-and-delete keeps the drive mirroring the local
+# retention (config/snapper/*.conf); baselines are never pruned on either side.
+set -euo pipefail
+
+LABEL=CAS-BACKUP
+MNT=/mnt/backup
+CONFIGS=(root home)
+
+die()  { echo "snap-backup: $*" >&2; exit 1; }
+info() { echo "snap-backup: $*"; }
+
+usage() {
+    cat <<USAGE
+Usage: snap-backup            snapshot + incremental transfer to the drive
+       snap-backup --init     create the root/home target subvolumes on the drive
+       snap-backup --status   show what is on the drive vs local (snbk list)
+
+Prepare a drive once (DESTROYS its contents):
+  sudo mkfs.btrfs -L $LABEL /dev/<partition> && sudo snap-backup --init
+USAGE
+}
+
+MODE=run
+case "${1:-}" in
+    "") ;;
+    --init) MODE=init ;;
+    --status) MODE=status ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; exit 1 ;;
+esac
+
+[[ $EUID -eq 0 ]] || die "must run as root (sudo snap-backup)"
+
+DEV="/dev/disk/by-label/$LABEL"
+MOUNTED_HERE=0
+if ! mountpoint -q "$MNT"; then
+    # exit 0, not an error: the weekly timer just skips when the drive is unplugged
+    [[ -e "$DEV" ]] || { info "no drive labelled $LABEL connected, nothing to do"; exit 0; }
+    mkdir -p "$MNT"
+    mount -o noatime,compress=zstd:3 "$DEV" "$MNT"
+    MOUNTED_HERE=1
+fi
+cleanup() { if [[ $MOUNTED_HERE -eq 1 ]]; then umount "$MNT"; fi; }
+trap cleanup EXIT
+
+if [[ $MODE == init ]]; then
+    for c in "${CONFIGS[@]}"; do
+        if [[ -d "$MNT/$c" ]]; then
+            info "$MNT/$c already exists"
+        else
+            btrfs subvolume create "$MNT/$c"
+        fi
+    done
+    exit 0
+fi
+
+for c in "${CONFIGS[@]}"; do
+    [[ -d "$MNT/$c" ]] || die "$MNT/$c missing; run: sudo snap-backup --init"
+done
+
+if [[ $MODE == status ]]; then
+    for c in "${CONFIGS[@]}"; do snbk -b "$c" list; done
+    exit 0
+fi
+
+for c in "${CONFIGS[@]}"; do
+    num="$(snapper -c "$c" create --print-number -c timeline -d "backup")"
+    info "$c: snapshot #$num, transferring..."
+    snbk -b "$c" transfer-and-delete
+done
+info "done. $(df -h --output=used,avail "$MNT" | tail -1 | awk '{print $1" used, "$2" free"}') on $LABEL"

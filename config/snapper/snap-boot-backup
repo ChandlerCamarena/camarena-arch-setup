@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# snap-boot-backup - mirror kernel/initramfs/ucode from /boot into
+# /.bootbackup so every root snapshot carries the /boot it booted with.
+# /boot is vfat and outside btrfs; without this a rolled-back root would
+# boot a newer kernel than its /usr/lib/modules. Called by pacman hooks.
+set -euo pipefail
+SRC=/boot
+DEST=/.bootbackup
+mkdir -p "$DEST"
+shopt -s nullglob
+want=("$SRC"/vmlinuz-* "$SRC"/initramfs-* "$SRC"/*-ucode.img)
+for f in "${want[@]}"; do
+    # skip unchanged files so snapshots share extents instead of each
+    # holding a fresh ~100MB copy
+    cmp -s "$f" "$DEST/${f##*/}" || cp -p "$f" "$DEST/"
+done
+for f in "$DEST"/*; do
+    [[ -e "$SRC/${f##*/}" ]] || rm -f "$f"
+done

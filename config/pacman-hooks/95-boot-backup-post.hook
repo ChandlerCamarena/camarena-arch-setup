@@ -1,0 +1,13 @@
+# Sorts after 90-mkinitcpio-install.hook and before snap-pac's
+# zz-snap-pac-post.hook, so the post snapshot has the new kernel+initramfs.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Mirroring /boot into /.bootbackup (post)...
+When = PostTransaction
+Exec = /usr/local/bin/snap-boot-backup

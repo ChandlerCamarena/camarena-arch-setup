@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly snap-backup (skips quietly if the drive is unplugged)
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target

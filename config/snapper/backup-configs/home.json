@@ -1,0 +1,7 @@
+{
+    "config": "home",
+    "target-mode": "local",
+    "automatic": false,
+    "source-path": "/home",
+    "target-path": "/mnt/backup/home"
+}

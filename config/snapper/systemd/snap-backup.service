@@ -1,0 +1,8 @@
+[Unit]
+Description=Snapshot root/home and send them to the CAS-BACKUP drive
+Documentation=file:///usr/local/share/doc/camarena-arch-setup/snapshots-and-backups.md
+After=snapper-sync.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/snap-backup

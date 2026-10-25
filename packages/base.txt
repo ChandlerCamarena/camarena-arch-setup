@@ -81,6 +81,8 @@ rofi
 rust
 sddm
 slurp
+snap-pac
+snapper
 socat
 sudo
 thunar

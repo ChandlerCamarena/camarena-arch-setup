@@ -26,7 +26,7 @@ Official Arch repos, source builds, or GitHub release tarballs only — no AUR h
 ## Structure
 
 - **`scripts/`** — staged install scripts (`00`–`06`), run in order by `install.sh`. Each stage is independently idempotent.
-  - `00-preflight.sh` — connectivity/sudo checks, snapper pre-transaction hook install
+  - `00-preflight.sh` — connectivity/sudo checks
   - `01-package-preparation.sh` — pacman (incl. multilib enablement), flatpak, and Vulkan/Datum aux packages, in three logged sections
   - `02-build-from-source.sh` — Quickshell, grimblast, xpadneo
   - `03-nix-install.sh` — Determinate Systems installer, flakes/devShells only (never used for system/DE management)
@@ -36,6 +36,8 @@ Official Arch repos, source builds, or GitHub release tarballs only — no AUR h
 - **`config/`** — dotfiles copied into place. Mirrors real `~/.config` paths.
 - **`packages/`** — plain-text package lists (`pacman-packages.txt`, `flatpak-packages.txt`, `vulkan-datum-packages.txt`), comment/blank-line filtered, installed with `--needed`.
 - **`fonts/`** — Departure Mono (OFL-licensed).
+- **`docs/`** — how-to docs for RGB and snapshots/rollback/backups.
+- **`scripts/lib/snapshots.sh`** — snapper/snap-pac/rollback/backup mechanism (configs, hooks, tools, timers). Used by `01`, `06`, and `tools/setup-snapshots.sh`.
 - **`install.sh`** — entry point. Sets `core.hooksPath` automatically, runs all staged scripts in order. Self-deletes only after every stage passes, gated behind a safety check.
 
 `scripts/lib/verify-repo.sh` is a repo linter wired into the `pre-commit` git hook — checks `copy_plain` sources exist, package-list naming for AUR-suspicious patterns, README stage-range accuracy, and script header conventions.
@@ -66,9 +68,7 @@ Run from a fresh Arch base install (post-`pacstrap`, post-chroot, already booted
 
 ## Theme
 
-Everything visual — Hyprland borders/gaps, Quickshell panels, Yazi, Kitty, Neovim, GTK apps, and the SDDM login screen — reads from a single source of truth: `config/hypr/theme.json`. Each consumer has a thin generator/loader that reads this file and produces its native config format.
-
-**Not yet on this pattern:** `config/rofi/colors/retrowave.rasi` still has hardcoded hex values rather than generating from `theme.json` — same drift risk the SDDM theme had before it was fixed. Tracked in Future Work.
+Everything visual — Hyprland borders/gaps, Quickshell panels, Yazi, Kitty, Neovim, GTK apps, Rofi (`generate-rofi.sh` → `retrowave.rasi`, plus the clipboard picker), RGB (`rgb theme`), and the SDDM login screen — reads from a single source of truth: `config/hypr/theme.json`. Each consumer has a thin generator/loader that reads this file and produces its native config format.
 
 ### Palette
 
@@ -89,9 +89,17 @@ Everything visual — Hyprland borders/gaps, Quickshell panels, Yazi, Kitty, Neo
 
 Layout: flat, square, unrounded panels (`rounding: 0`), two-tone raised/sunken bevel borders instead of drop shadows or blur. Font: Departure Mono throughout, `Symbols Nerd Font` for icon glyphs.
 
+### RGB
+
+Declarative OpenRGB profiles (`off`, `purple`, `theme`) driven by `rgb [toggle|off|purple|theme|apply]`, re-applied on login by `openrgb.service`. See **[docs/rgb.md](docs/rgb.md)**.
+
 ### Rice switching
 
 Multiple visual profiles under `~/.config/rices/<name>/`, each with `theme.json` + `wallpaper.png` and an optional `apply.sh`. Switching repoints symlinks, regenerates every derived config, reloads Hyprland. See `config/rices/scripts/switch.sh` for the authoritative sequencing.
+
+## Snapshots, rollback, backups
+
+snap-pac pre/post pairs on every pacman run, daily timeline snapshots (7 daily + 4 weekly) for `/` and `/home`, a never-pruned **clean-install baseline** taken at the end of `install.sh`, `snap-rollback` to boot back into any of them, and `snap-backup` for incremental btrfs send/receive to an external drive labelled `CAS-BACKUP`. See **[docs/snapshots-and-backups.md](docs/snapshots-and-backups.md)**.
 
 ## Hardware targets
 
@@ -102,8 +110,8 @@ PRIME/NVIDIA environment variables are hostname-gated in `uwsm/env-hyprland`, so
 
 ## Known limitations
 
-- **Snapper rollback is not functional on this setup.** Snapper 0.13.1 cannot auto-detect a rollback "ambit" with a systemd-boot + standard `@`-subvolume layout (no grub-btrfs-style integration). Setting a btrfs default subvolume and stripping explicit `subvol=` from fstab/boot entry makes ambit detection pass the precondition check but rollback still fails in practice. Treat snapper snapshots as manual diff/reference points only. A real reset requires the manual btrfs subvolume delete-and-recreate procedure from a live USB.
-- **`00-preflight.sh` installs the snapshot pacman hook but does not run `snapper -c root create-config /`.** Without a snapper config already present, the hook is inert. Currently a manual step post-install.
+- **`snapper rollback` itself does not work on this setup.** Snapper cannot detect a rollback "ambit" with systemd-boot plus a flat `@` layout. Use `snap-rollback` instead (docs/snapshots-and-backups.md). It does the subvolume swap at the btrfs top level, which works because fstab and the boot entry mount `@` by name.
+- **Rollback doesn't carry nested subvolumes inside `@`** (e.g. `/var/lib/machines`); they stay in the old `@.pre-rollback-*`.
 
 ## Future work
 
@@ -111,8 +119,6 @@ PRIME/NVIDIA environment variables are hostname-gated in `uwsm/env-hyprland`, so
 - **Apply-live theme switching** — regenerate and push theme changes to already-running Hyprland/Quickshell/Kitty instances without a full reload, where the target supports it (Kitty already supports live color pushes via its remote-control socket; others don't yet).
 - **Vivaldi config in-repo** — not currently tracked; profile/settings reproduction is manual.
 - **Install profiles / flags** — `install.sh --profile gaming` / `--profile work` or similar, to include/exclude package sets (e.g. Steam/MangoHud vs. a leaner work-only install) without maintaining separate package lists by hand.
-- **`retrowave.rasi` on the `theme.json` pattern** — currently hardcoded, should generate like every other consumer.
-- **Automate snapper `create-config`** — fold into `00-preflight.sh` so the snapshot hook has something to act on immediately post-install, rather than requiring a manual step.
 - **Custom icon theme** — full custom set matching the sharp/bevel aesthetic. Deferred, multi-session scope.
 - **PPI-aware `monitors.lua`** — deferred until validated on a real two-display setup. Correct approach identified: read EDID from `/sys/class/drm/*/edid` directly, since `hl.get_monitors()` has no physical size fields and `io.popen("hyprctl ...")` from inside a config reload deadlocks against Hyprland's own IPC socket.
 

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# snap-baseline - mark the current system as a known-good restore point.
+# Takes root + home snapshots tagged with userdata baseline=yes and no
+# cleanup algorithm, so snapper never prunes them and snbk keeps them on the
+# backup drive. install.sh runs this once at the end ("clean install").
+# Return with: sudo snap-rollback --baseline
+set -euo pipefail
+[[ $EUID -eq 0 ]] || { echo "snap-baseline: must run as root (sudo snap-baseline [description])" >&2; exit 1; }
+desc="baseline: ${1:-$(date +%F)}"
+# refresh /.bootbackup so the root snapshot carries the kernel it matches,
+# even if no pacman transaction has run since the hooks were installed
+/usr/local/bin/snap-boot-backup
+for cfg in root home; do
+    snapper -c "$cfg" get-config &>/dev/null || continue
+    num="$(snapper -c "$cfg" create --print-number -d "$desc" -u baseline=yes)"
+    echo "snap-baseline: $cfg #$num  $desc"
+done

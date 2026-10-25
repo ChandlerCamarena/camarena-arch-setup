@@ -1,0 +1,7 @@
+{
+    "config": "root",
+    "target-mode": "local",
+    "automatic": false,
+    "source-path": "/",
+    "target-path": "/mnt/backup/root"
+}

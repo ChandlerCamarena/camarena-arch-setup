@@ -22,38 +22,27 @@ else
     log "multilib already enabled, skipping."
 fi
 
-# --- snapper bootstrap: minimal install, config, hook, baseline snapshot ---
+# --- snapper bootstrap: minimal install, configs, hooks, baseline snapshot ---
 # Runs before the base+profiles install below so the rest of the pacman
 # section (and every later stage) is under snapshot protection.
+# Mechanism lives in lib/snapshots.sh (shared with tools/setup-snapshots.sh).
+source "$SCRIPT_DIR/lib/snapshots.sh"
+
 log "Installing snapper (minimal, ahead of full package list)..."
 sudo pacman -Sy --needed --noconfirm snapper
 
 if command_exists snapper; then
-    if sudo snapper -c root get-config &>/dev/null; then
-        log "Snapper config 'root' already exists, skipping create-config."
-    else
-        log "Creating snapper config 'root' for /..."
-        sudo snapper -c root create-config /
-    fi
-else
-    err "snapper binary not found after minimal install. Skipping config, hook, and baseline snapshot. Remaining packages will install WITHOUT snapshot protection."
-fi
-
-if command_exists snapper && sudo snapper -c root get-config &>/dev/null; then
-    HOOK_SRC="$SCRIPT_DIR/../config/pacman-hooks/00-snapshot.hook"
-    HOOK_DEST="/etc/pacman.d/hooks/00-snapshot.hook"
-    if [[ -f "$HOOK_SRC" ]]; then
-        log "Installing snapper pre-transaction snapshot hook..."
-        sudo mkdir -p "$(dirname "$HOOK_DEST")"
-        sudo cp "$HOOK_SRC" "$HOOK_DEST"
-    else
-        err "Snapshot hook source not found at $HOOK_SRC, skipping."
-    fi
+    snapshots_create_config root /
+    snapshots_apply_settings root
+    # snap-pac after the config exists, so its own install is already covered
+    sudo pacman -S --needed --noconfirm snap-pac
+    snapshots_install_hooks
+    snapshots_install_tools
 
     log "Creating baseline snapshot before full package install..."
-    sudo snapper -c root create -d "pre-install baseline (camarena-arch-setup)"
+    sudo snapper -c root create -c number -d "pre-install baseline (camarena-arch-setup)"
 else
-    err "Skipping hook install and baseline snapshot: no valid snapper 'root' config."
+    err "snapper binary not found after minimal install. Skipping configs, hooks, and baseline snapshot. Remaining packages will install WITHOUT snapshot protection."
 fi
 # --- end snapper bootstrap ---
 

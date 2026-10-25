@@ -28,15 +28,4 @@ if ! sudo -v; then
     exit 1
 fi
 
-HOOK_SRC="$SCRIPT_DIR/../config/pacman-hooks/00-snapshot.hook"
-HOOK_DEST="/etc/pacman.d/hooks/00-snapshot.hook"
-
-if [[ -f "$HOOK_SRC" ]]; then
-    log "Installing snapper pre-transaction snapshot hook..."
-    sudo mkdir -p "$(dirname "$HOOK_DEST")"
-    sudo cp "$HOOK_SRC" "$HOOK_DEST"
-else
-    err "Snapshot hook source not found at $HOOK_SRC, skipping. Every pacman transaction from here forward will run WITHOUT snapshot protection until this file exists."
-fi
-
 log "Preflight checks passed."

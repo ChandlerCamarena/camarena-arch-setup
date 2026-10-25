@@ -95,6 +95,12 @@ done
 
 log "All stages complete. Reboot or restart Hyprland to apply changes."
 
+# Known-good restore point for `snap-rollback --baseline`, never auto-pruned.
+if [[ -x /usr/local/bin/snap-baseline ]]; then
+    log "Creating clean-install baseline snapshot (root + home)..."
+    sudo /usr/local/bin/snap-baseline "clean install (camarena-arch-setup)"
+fi
+
 if [[ -f "$SCRIPT_DIR/install.sh" && -d "$SCRIPT_DIR/scripts" && -d "$SCRIPT_DIR/config" && -d "$SCRIPT_DIR/packages" ]]; then
     cd "$HOME"
     log "Removing repo directory $SCRIPT_DIR"
