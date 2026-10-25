@@ -1,0 +1,100 @@
+# Weekly: move packages/sources.txt pins to upstream's latest with
+# tools/bump-sources.sh, which runs the full VM pipeline (tools/vm/vm.sh test,
+# all profiles) and keeps only bumps that pass.
+#   - passing bumps -> pull request "Bump pinned sources" (branch bump-sources)
+#   - failing bumps -> issue "Latest upstream breaks the VM pipeline"
+#     (commented on instead of duplicated while it stays open)
+# Logs are uploaded as run artifacts either way.
+name: bump-sources
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"   # Mondays 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency: bump-sources
+
+jobs:
+  bump:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      CACHE: /home/runner/.cache/camarena-arch-setup
+    steps:
+      # An all-profiles VM (Steam, Haskell, Metasploit, ...) needs more than
+      # the runner's default free space
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /opt/hostedtoolcache /usr/local/share/boost /usr/local/.ghcup
+          df -h /
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+
+      - name: QEMU and tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            qemu-system-x86 qemu-utils ovmf xorriso rsync openssh-client gnupg jq curl
+
+      - uses: actions/checkout@v4
+
+      - name: Bump, test, keep what passes
+        id: bump
+        env:
+          # Ubuntu's OVMF paths; vm.sh defaults to Arch's edk2-ovmf ones
+          OVMF_CODE: /usr/share/OVMF/OVMF_CODE_4M.fd
+          OVMF_VARS: /usr/share/OVMF/OVMF_VARS_4M.fd
+          VM_CPUS: "4"
+          VM_MEM: 10G
+        run: |
+          set +e
+          tools/bump-sources.sh
+          echo "rc=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bump-sources-logs
+          path: |
+            ${{ env.CACHE }}/bump/
+            ${{ env.CACHE }}/vm/*.log
+          if-no-files-found: ignore
+
+      - name: Pull request for passing bumps
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bump-sources
+          add-paths: packages/sources.txt
+          commit-message: "Bump pinned sources"
+          title: "Bump pinned sources"
+          body-path: ${{ env.CACHE }}/bump/summary.md
+          delete-branch: true
+
+      - name: Issue for failing bumps
+        if: steps.bump.outputs.rc != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Latest upstream breaks the VM pipeline"
+          [ "${{ steps.bump.outputs.rc }}" = 2 ] && title="VM pipeline broken at current pins"
+          body="$CACHE/bump/summary.md"
+          printf '\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> "$body"
+          num="$(gh issue list --state open --search "\"$title\" in:title" --json number -q '.[0].number')"
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --body-file "$body"
+          else
+            gh issue create --title "$title" --body-file "$body"
+          fi

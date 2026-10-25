@@ -1,0 +1,36 @@
+# Fast checks on every push: the repo linter (official-repo package check
+# needs Arch's package database, hence the Arch container), shellcheck,
+# and a syntax pass over every bash and Lua file.
+name: lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    container: archlinux:latest
+    steps:
+      - name: Tools and package databases (multilib on, like 01-pacman-packages.sh)
+        run: |
+          printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> /etc/pacman.conf
+          pacman -Syu --noconfirm --needed git shellcheck lua
+
+      - uses: actions/checkout@v4
+
+      - name: verify-repo.sh
+        run: bash scripts/lib/verify-repo.sh
+
+      - name: shellcheck
+        run: |
+          shopt -s nullglob
+          shellcheck -S warning install.sh update.sh scripts/*.sh scripts/lib/*.sh \
+            scripts/lib/builds/*.sh tools/*.sh tools/vm/*.sh config/rices/scripts/*.sh \
+            config/hypr/scripts/*/*.sh config/rofi/launchers/*/*.sh config/snapper/snap-*
+
+      - name: bash -n / luac -p
+        run: |
+          shopt -s globstar nullglob
+          for f in **/*.sh config/snapper/snap-*; do bash -n "$f"; done
+          for f in config/**/*.lua; do luac -p "$f"; done
