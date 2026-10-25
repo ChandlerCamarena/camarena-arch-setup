@@ -1,8 +1,8 @@
 # Snapshots, rollback, and backups
 
 An installed copy of this file lives at
-`/usr/local/share/doc/camarena-arch-setup/snapshots-and-backups.md`, since
-`install.sh` deletes the repo when it finishes.
+`/usr/local/share/doc/camarena-arch-setup/snapshots-and-backups.md`, so it's
+still there if the repo was removed with `install.sh --delete-repo`.
 
 ## The short version
 
@@ -208,7 +208,7 @@ own subvolume is therefore excluded from `/home` snapshots, and with them from
 
 | Directory                  | Why excluded                       |
 | -------------------------- | ---------------------------------- |
-| `~/.local/share/Steam`     | ~1.5T of re-downloadable games     |
+| `~/.local/share/Steam`     | ~1.5T of re-downloadable games (only with the `gaming` profile) |
 | `~/AI/models`              | re-downloadable model weights      |
 
 The list is `SNAPSHOT_EXCLUDED_DIRS` in `scripts/lib/snapshots.sh`. On a fresh
