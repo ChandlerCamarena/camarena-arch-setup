@@ -21,6 +21,16 @@ QtObject {
         onFileChanged: reload()
     }
 
+    // theme.json is a symlink into the active rice. A rice switch
+    // repoints it, but the watcher stays on the old target, so
+    // switch.sh calls this (via `qs ipc call theme reload`) to re-set
+    // the path, which re-reads and re-watches the new target.
+    function reload() {
+        const p = configFile.path
+        configFile.path = ""
+        configFile.path = p
+    }
+
     readonly property var colors: data.colors ?? {}
     readonly property var bevel: data.bevel ?? {}
     readonly property var layout: data.layout ?? {}

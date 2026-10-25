@@ -15,8 +15,9 @@ fi
 
 sudo mkdir -p "$SDDM_THEME_DEST"
 sudo cp -r "$SDDM_THEME_SRC"/* "$SDDM_THEME_DEST/"
-sudo cp "$SCRIPT_DIR/../config/hypr/theme.json" "$SDDM_THEME_DEST/theme.json"
-sudo cp "$SCRIPT_DIR/../config/hypr/wallpapers/wallpaper.png" "$SDDM_THEME_DEST/wallpaper.png"
+# Active rice's files (symlinks set up by 05), not the repo default
+sudo cp "$HOME/.config/hypr/theme.json" "$SDDM_THEME_DEST/theme.json"
+sudo cp "$HOME/.config/hypr/wallpapers/wallpaper.png" "$SDDM_THEME_DEST/wallpaper.png"
 
 sudo mkdir -p /etc/sddm.conf.d
 printf '[Theme]\nCurrent=retrowave\n' | sudo tee /etc/sddm.conf.d/theme.conf > /dev/null

@@ -28,6 +28,14 @@ ShellRoot {
         }
     }
 
+    IpcHandler {
+        target: "theme"
+
+        function reload(): void {
+            Modules.Theme.reload()
+        }
+    }
+
 
     IpcHandler {
         target: "dashboard"
