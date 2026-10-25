@@ -1,4 +1,10 @@
 [user]
-	emal = chandler.camarena@cox.net
 	name = Chandler Camarena
 	email = chandler@chandlercamarena.com
+[init]
+	defaultBranch = main
+[core]
+	pager = less -FRX
+# Signing only for Datum, see datum.gitconfig
+[includeIf "gitdir:~/Projects/Datum/"]
+	path = datum.gitconfig

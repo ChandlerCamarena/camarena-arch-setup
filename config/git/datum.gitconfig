@@ -1,0 +1,13 @@
+# Loaded only inside ~/Projects/Datum (includeIf in ./config).
+# Every Datum commit/tag is signed with the Datum key, and the passphrase
+# prompt is deliberate: a reminder that this repo's history is signed.
+[user]
+	signingkey = ~/.ssh/datum-signing
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
+[commit]
+	gpgsign = true
+[tag]
+	gpgsign = true
