@@ -18,7 +18,9 @@ cp "$FONT_SRC_DIR/OFL.txt" "$FONT_DEST_DIR/DepartureMono-OFL.txt"
 log "Rebuilding font cache..."
 fc-cache -f "$FONT_DEST_DIR"
 
-if fc-list | grep -qi "Departure Mono"; then
+# fc-list filters by family itself: piping into grep -q under pipefail
+# fails whenever grep exits before fc-list finishes writing (SIGPIPE)
+if [[ -n "$(fc-list "Departure Mono")" ]]; then
     log "Departure Mono registered successfully."
 else
     err "Departure Mono not found by fontconfig after cache rebuild. Check the file and rerun fc-cache manually."

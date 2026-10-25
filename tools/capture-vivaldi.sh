@@ -8,7 +8,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/lib/common.sh"
+source "$SCRIPT_DIR/../scripts/lib/common.sh"
 
 VIVALDI_PROFILE="$HOME/.config/vivaldi/Default"
 DEST="$SCRIPT_DIR/../config/vivaldi"
