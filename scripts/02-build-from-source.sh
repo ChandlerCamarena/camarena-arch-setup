@@ -4,25 +4,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
 require_not_root
 
+source "$SCRIPT_DIR/lib/sources.sh"
+
+# Every source here is pinned in packages/sources.txt; a rebuild happens when
+# the pin differs from what was last built (the .last-built-commit marker).
+
 QS_SRC_DIR="$HOME/.local/src/quickshell"
 QS_BUILD_MARKER="$QS_SRC_DIR/.last-built-commit"
-mkdir -p "$(dirname "$QS_SRC_DIR")"
-
-if [[ ! -d "$QS_SRC_DIR" ]]; then
-    log "Cloning QuickShell..."
-    git clone https://github.com/quickshell-mirror/quickshell.git "$QS_SRC_DIR"
-fi
-
-cd "$QS_SRC_DIR"
-log "Fetching latest QuickShell source..."
-git fetch origin
-REMOTE_HEAD="$(git rev-parse origin/master)"
-LOCAL_BUILT="$(cat "$QS_BUILD_MARKER" 2>/dev/null || echo "none")"
-
-if [[ "$REMOTE_HEAD" != "$LOCAL_BUILT" ]]; then
-    log "Building QuickShell ($LOCAL_BUILT -> $REMOTE_HEAD)..."
-    git checkout master
-    git merge --ff-only origin/master
+QS_PIN="$(source_get quickshell pin)"
+# Quickshell builds against Qt's private API, so a Qt update can break the
+# installed binary even at the same pin: rebuild when either changes.
+QS_BUILD_ID="$QS_PIN qt6-base=$(pacman -Q qt6-base | cut -d' ' -f2)"
+if [[ "$(cat "$QS_BUILD_MARKER" 2>/dev/null)" != "$QS_BUILD_ID" ]]; then
+    source_checkout quickshell "$QS_SRC_DIR"
+    log "Building QuickShell @ ${QS_PIN:0:12}..."
+    cd "$QS_SRC_DIR"
     cmake -B build -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
@@ -30,43 +26,35 @@ if [[ "$REMOTE_HEAD" != "$LOCAL_BUILT" ]]; then
         -DVENDOR_CPPTRACE=ON
     cmake --build build
     sudo cmake --install build
-    echo "$REMOTE_HEAD" > "$QS_BUILD_MARKER"
-    log "QuickShell built and installed successfully."
+    echo "$QS_BUILD_ID" > "$QS_BUILD_MARKER"
+    cd "$SCRIPT_DIR"
+    log "QuickShell built and installed."
 else
-    log "QuickShell already up to date ($LOCAL_BUILT)."
+    log "QuickShell already at pinned ${QS_PIN:0:12}."
 fi
 
-log "Fetching grimblast (AUR-only upstream, pulled as a single script instead)..."
+log "Installing grimblast (single script from hyprwm/contrib, AUR-only otherwise)..."
 mkdir -p "$HOME/.local/bin"
-curl -fsSL https://raw.githubusercontent.com/hyprwm/contrib/main/grimblast/grimblast \
+curl -fsSL "https://raw.githubusercontent.com/hyprwm/contrib/$(source_get contrib pin)/grimblast/grimblast" \
     -o "$HOME/.local/bin/grimblast"
 chmod +x "$HOME/.local/bin/grimblast"
-log "grimblast installed to $HOME/.local/bin/grimblast"
 
-log "Installing xpadneo (Xbox controller Bluetooth DKMS driver, AUR-only upstream, built from source instead)..."
 XPADNEO_SRC_DIR="$HOME/.local/src/xpadneo"
 XPADNEO_BUILD_MARKER="$XPADNEO_SRC_DIR/.last-built-commit"
-if [[ ! -d "$XPADNEO_SRC_DIR" ]]; then
-    log "Cloning xpadneo..."
-    git clone https://github.com/atar-axis/xpadneo.git "$XPADNEO_SRC_DIR"
+XPADNEO_PIN="$(source_get xpadneo pin)"
+# capture first: grep -q on a pipe under pipefail, see 04-fonts.sh
+dkms_modules="$(sudo dkms status)"
+if grep -q '^hid-xpadneo' <<<"$dkms_modules" && [[ "$(cat "$XPADNEO_BUILD_MARKER" 2>/dev/null)" == "$XPADNEO_PIN" ]]; then
+    log "xpadneo DKMS module already at pinned ${XPADNEO_PIN:0:12}."
 else
-    log "xpadneo source already present, pulling latest..."
-    git -C "$XPADNEO_SRC_DIR" pull --ff-only
-fi
-
-XPADNEO_REMOTE_HEAD="$(git -C "$XPADNEO_SRC_DIR" rev-parse HEAD)"
-XPADNEO_LOCAL_BUILT="$(cat "$XPADNEO_BUILD_MARKER" 2>/dev/null || echo "none")"
-
-if sudo dkms status | grep -q '^hid-xpadneo' && [[ "$XPADNEO_REMOTE_HEAD" == "$XPADNEO_LOCAL_BUILT" ]]; then
-    log "xpadneo DKMS module already registered and up to date ($XPADNEO_LOCAL_BUILT), skipping."
-else
-    if sudo dkms status | grep -q '^hid-xpadneo'; then
-        log "xpadneo source updated ($XPADNEO_LOCAL_BUILT -> $XPADNEO_REMOTE_HEAD), removing old DKMS module before reinstall..."
+    if grep -q '^hid-xpadneo' <<<"$dkms_modules"; then
+        log "Removing old xpadneo DKMS module before installing ${XPADNEO_PIN:0:12}..."
         (cd "$XPADNEO_SRC_DIR" && sudo ./uninstall.sh) || err "xpadneo uninstall.sh failed or not present; attempting install over existing module."
     fi
-    log "Installing xpadneo via its own install script (runs dkms add/build/install)..."
+    source_checkout xpadneo "$XPADNEO_SRC_DIR" --with-tags
+    log "Installing xpadneo (Xbox controller DKMS driver, AUR-only otherwise) via its own install script..."
     (cd "$XPADNEO_SRC_DIR" && sudo ./install.sh)
-    echo "$XPADNEO_REMOTE_HEAD" > "$XPADNEO_BUILD_MARKER"
+    echo "$XPADNEO_PIN" > "$XPADNEO_BUILD_MARKER"
 fi
 
 # ---------------------------------------------------------------------------
@@ -79,6 +67,7 @@ for profile in ${CAS_PROFILES:-}; do
     profile_build_script="$BUILD_LIB_DIR/${profile}.sh"
     if [[ -f "$profile_build_script" ]]; then
         log "Running build-from-source steps for profile: $profile"
+        # shellcheck source=/dev/null  # one of scripts/lib/builds/*.sh
         source "$profile_build_script"
         "run_${profile}_builds"
     fi

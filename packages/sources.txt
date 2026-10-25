@@ -1,0 +1,25 @@
+# sources.txt
+# Everything installed from outside pacman/Flatpak, pinned. install.sh and
+# update.sh build exactly these versions (scripts/lib/sources.sh); nothing
+# floats to "whatever upstream has today". tools/bump-sources.sh moves pins
+# to upstream's latest, VM-tests them, and keeps only the ones that pass.
+#
+# name           type     url                                                track   pin
+#   git:     track = branch to follow, pin = commit
+#   release: track = "latest" GitHub release, pin = tag
+#
+# quickshell     - the shell (02-build-from-source.sh)
+# contrib        - hyprwm/contrib, for grimblast (02-build-from-source.sh)
+# xpadneo        - Xbox controller DKMS driver (02-build-from-source.sh)
+# ohmyzsh        - zsh framework (05-dotfiles-copy.sh)
+# powerlevel10k  - zsh prompt (05-dotfiles-copy.sh)
+# metasploit     - security profile (scripts/lib/builds/security.sh)
+# powershell     - languages profile, Microsoft's release tarball
+#                  (scripts/lib/builds/languages.sh)
+quickshell       git      https://github.com/quickshell-mirror/quickshell.git     master  9b0f339b19057f4731bf3b48293307d7ef241671
+contrib          git      https://github.com/hyprwm/contrib.git                   main    a54daf843dcdf6f5ff86996ab011de6e86a1bd7c
+xpadneo          git      https://github.com/atar-axis/xpadneo.git                master  3acca9f5e211edb601000bb64767b78b2468f787
+ohmyzsh          git      https://github.com/ohmyzsh/ohmyzsh.git                  master  42a4ccb1b14dbeffe81259105a5243b4f4cb618e
+powerlevel10k    git      https://github.com/romkatv/powerlevel10k.git            master  3308262dfbd743b6e1d3956a2b5572f7a049d692
+metasploit       git      https://github.com/rapid7/metasploit-framework.git      master  e25d6ee62a0c7f7df27f367c8028859fdf8136a7
+powershell       release  https://github.com/PowerShell/PowerShell                latest  v7.6.7
