@@ -4,6 +4,9 @@ config/Surfshark/
 config/zsh/.zsh_history
 config/zsh/.zcompdump-*
 
+# Local notes, not part of the repo
+LESSONS.md
+
 # Python bytecode (config/rgb/rgb.py)
 __pycache__/
 
