@@ -11,7 +11,7 @@ hl.bind(M .. " + Return", hl.dsp.exec_cmd("kitty"))
 
 
 hl.bind(M .. " + R",      hl.dsp.exec_cmd("steam"))
-hl.bind(M .. " + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/cliphist-rofi.sh"))
+hl.bind(M .. " + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard/cliphist-rofi.sh"))
 
 hl.bind(M .. " + E",      hl.dsp.exec_cmd("thunar"))
 --               D is Dashboard

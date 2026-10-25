@@ -17,7 +17,7 @@ hl.on("hyprland.start", function()
   -- Bluetooth tray
   hl.exec_cmd("blueman-applet")
   -- Media priority daemon (pauses mpv when other audio plays)
-  hl.exec_cmd("~/.config/hypr/scripts/media-priority.sh")
+  hl.exec_cmd("~/.config/hypr/scripts/media/media-priority.sh")
   -- Jazz autoplay
   hl.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.2")
   hl.exec_cmd("playerctld daemon")
