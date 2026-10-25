@@ -1,0 +1,13 @@
+# nvidia.txt
+# NVIDIA GPU stack. Both current machines have NVIDIA cards; skip this on
+# one that doesn't.
+# libva-nvidia-driver - VA-API video decode on NVIDIA (browsers, mpv)
+# nvidia-open         - open kernel modules, for Turing (GTX 16xx) and newer
+# nvidia-prime        - prime-run, offload to the dGPU on hybrid laptops
+# nvidia-settings     - driver settings GUI
+# nvidia-utils        - userspace driver, nvidia-smi
+libva-nvidia-driver
+nvidia-open
+nvidia-prime
+nvidia-settings
+nvidia-utils

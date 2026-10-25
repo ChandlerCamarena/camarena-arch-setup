@@ -56,7 +56,7 @@ snapshots_install_tools() {
     done
     sudo install -Dm644 "$SNAP_SRC/snapper/systemd/snap-backup.service" /etc/systemd/system/snap-backup.service
     sudo install -Dm644 "$SNAP_SRC/snapper/systemd/snap-backup.timer" /etc/systemd/system/snap-backup.timer
-    # the repo deletes itself after install.sh, so keep a copy of the docs
+    # install.sh --delete-repo removes the clone, so keep a copy of the docs
     sudo install -Dm644 "$SNAP_SRC/../docs/snapshots-and-backups.md" \
         /usr/local/share/doc/camarena-arch-setup/snapshots-and-backups.md
     # automatic=false: snbk never runs on its own, see docs/snapshots-and-backups.md
@@ -97,14 +97,22 @@ snapshots_purge() {
 # Directories that must never be in /home snapshots or backups. Created as
 # nested subvolumes before anything is put in them (snapshots don't recurse).
 # Existing directories: tools/make-subvolume.sh <dir>
+# "<dir>|<profile>": only created when that profile is active; no profile
+# means always.
 SNAPSHOT_EXCLUDED_DIRS=(
-    "$HOME/.local/share/Steam"   # 1.5T of re-downloadable games
-    "$HOME/AI/models"            # re-downloadable model weights
+    "$HOME/.local/share/Steam|gaming"   # 1.5T of re-downloadable games
+    "$HOME/AI/models"                   # re-downloadable model weights
 )
 
 snapshots_exclude_dirs() {
-    local d
-    for d in "${SNAPSHOT_EXCLUDED_DIRS[@]}"; do
+    local entry d profile
+    for entry in "${SNAPSHOT_EXCLUDED_DIRS[@]}"; do
+        d="${entry%%|*}"
+        profile=""
+        [[ "$entry" == *"|"* ]] && profile="${entry#*|}"
+        if [[ -n "$profile" ]] && ! profile_active "$profile"; then
+            continue
+        fi
         if [[ ! -e "$d" ]]; then
             mkdir -p "$(dirname "$d")"
             btrfs subvolume create "$d" >/dev/null

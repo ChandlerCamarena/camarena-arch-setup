@@ -1,19 +1,27 @@
+# base.txt
+# Core desktop environment packages, installed on every machine regardless
+# of profile. Includes the default languages, C/C++ (gcc, clang) and
+# Python, plus editor support for them: language servers (clangd ships
+# with clang; lua, bash, python below), formatters (clang-format ships
+# with clang; ruff, stylua, shfmt), gdb for Neovim's debugger, shellcheck,
+# and tree-sitter-cli for Neovim's parsers. Vulkan/Project-Datum toolchain
+# lives in profiles/datum.txt, more languages in profiles/languages.txt.
+# Official repos only (verify-repo.sh checks).
 7zip
 alsa-utils
 aria2
 base
 base-devel
+bash-language-server
 blueman
 bluez
 bluez-utils
 brightnessctl
 btrfs-progs
 clang
-clang21
 cli11
 cliphist
 cmake
-# Core desktop environment packages. Vulkan/Project-Datum toolchain
 cpptrace
 dart-sass
 dkms
@@ -22,11 +30,11 @@ dosfstools
 efibootmgr
 evince
 eza
-firefox
 flatpak
+gcc
+gdb
 ghostty
 git
-github-cli
 glib2-devel
 glm
 grim
@@ -41,35 +49,31 @@ intel-ucode
 jemalloc
 jq
 kitty
-libva-nvidia-driver
+librewolf
 linux
 linux-firmware
 linux-headers
-# lives in datum-packages.txt, kept separate on purpose.
-llvm21
+lua-language-server
 man-db
 man-pages
 mpv
 mpv-mpris
 ncdu
 neovim
-networkmanager
 network-manager-applet
+networkmanager
 ninja
 noto-fonts
 noto-fonts-emoji
-nvidia-open
-nvidia-prime
-nvidia-settings
-nvidia-utils
 nvtop
 nwg-look
 otf-geist-mono-nerd
-# pacman-packages.txt
 pavucontrol
 pipewire-pulse
 pkgconf
 playerctl
+pyright
+python
 python-pip
 qt5-wayland
 qt6-base
@@ -78,16 +82,20 @@ qt6-svg
 qt6-wayland
 qutebrowser
 rofi
-rust
+ruff
 sddm
+shellcheck
+shfmt
 slurp
 snap-pac
 snapper
 socat
+stylua
 sudo
 thunar
 thunar-archive-plugin
 tree
+tree-sitter-cli
 ttf-jetbrains-mono
 ttf-nerd-fonts-symbols
 tumbler
@@ -95,7 +103,6 @@ unzip
 uwsm
 vivaldi
 vulkan-headers
-vulkan-tools
 wayland-protocols
 wget
 wireplumber

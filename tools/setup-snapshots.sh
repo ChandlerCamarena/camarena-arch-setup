@@ -7,6 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../scripts/lib/common.sh"
 source "$SCRIPT_DIR/../scripts/lib/snapshots.sh"
+source "$SCRIPT_DIR/../scripts/lib/profiles.sh"
 require_not_root
 require_arch
 
@@ -26,6 +27,9 @@ if [[ $PURGE -eq 1 ]]; then
     snapshots_purge root
     snapshots_purge home
 fi
+
+# Profile-specific excluded dirs (Steam -> gaming) follow this machine's selection
+resolve_profiles
 
 sudo pacman -S --needed --noconfirm snapper snap-pac
 snapshots_setup_all

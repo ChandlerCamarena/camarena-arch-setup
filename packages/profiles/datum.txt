@@ -4,17 +4,22 @@
 # in its own repo, not this one -- this just gets a fresh machine's
 # toolchain ready without a separate manual step.
 #
-# cli11, cpptrace, glm, jemalloc are Quickshell build deps and live
+# cli11, cpptrace, glm, jemalloc, vulkan-headers are Quickshell build deps and live
 # in base.txt instead -- they're DE-required, not Datum-specific.
-
+# clang21          - pinned Clang the Datum driver builds against
+# llvm21           - matching LLVM
+# vulkan-tools     - vulkaninfo, vkcube
+clang21
+inotify-tools
+llvm21
 spirv-headers
-vulkan-html-docs
-vulkan-profiles
-vulkan-utility-libraries
-vulkan-validation-layers
-vulkan-extra-layers
-vulkan-extra-tools
-volk
 strace
 stress-ng
-inotify-tools
+volk
+vulkan-extra-layers
+vulkan-extra-tools
+vulkan-html-docs
+vulkan-profiles
+vulkan-tools
+vulkan-utility-libraries
+vulkan-validation-layers

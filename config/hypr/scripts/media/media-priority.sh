@@ -5,7 +5,7 @@
 
 mpv_was_playing=false
 
-playerctl --follow --player=spotify,firefox,chromium,vlc,mpv metadata --format '{{playerName}} {{status}}' 2>/dev/null | \
+playerctl --follow --player=spotify,librewolf,firefox,chromium,vlc,mpv metadata --format '{{playerName}} {{status}}' 2>/dev/null | \
 while read -r player status; do
   if [[ "$player" == "mpv" ]]; then
     # Track mpv state changes that weren't caused by us
