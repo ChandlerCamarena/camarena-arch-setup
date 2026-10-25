@@ -5,7 +5,8 @@ OUT="$HOME/.config/rofi/colors/retrowave.rasi"
 
 c() { jq -r ".colors.$1" "$THEME"; }
 
-cat > "$OUT" << TOML
+mkdir -p "$(dirname "$OUT")"
+cat > "$OUT" << RASI
 /**
  * Retrowave color scheme
  * Derived from city pop wallpaper palette.
@@ -20,4 +21,4 @@ cat > "$OUT" << TOML
     active:         #$(c purple)ff;       /* purple -- secondary accent */
     urgent:         #$(c error)ff;        /* hot pink -- error */
 }
-TOML
+RASI
