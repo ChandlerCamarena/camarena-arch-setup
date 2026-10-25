@@ -70,7 +70,7 @@ This repo assumes you're picking up *after* a working, booted, networked Arch ba
 
 1. **Partition and format** — btrfs on the root partition with a `@`/`@home`/`@log`/`@pkg`/`@snapshots` subvolume layout, FAT32 EFI partition, swap.
 2. **`pacstrap` the base system** — `base linux linux-firmware btrfs-progs sudo vim networkmanager intel-ucode` at minimum.
-3. **`genfstab` + `arch-chroot`.**
+3. **`genfstab` + `arch-chroot`.** Then remove `subvolid=…` from every btrfs line in `/etc/fstab`, keeping `subvol=…`: `genfstab` writes both, and a pinned `subvolid` would keep mounting the old root after a `snap-rollback` (which swaps subvolumes by name). `sed -i -E 's/,subvolid=[0-9]+//; s/subvolid=[0-9]+,//' /mnt/etc/fstab` does it.
 4. **Inside chroot:** locale, hostname, root password, timezone (`ln -sf /usr/share/zoneinfo/<zone> /etc/localtime && hwclock --systohc` — `timedatectl` does not work inside a chroot), NVIDIA driver + `mkinitcpio` modules, systemd-boot (**double-check `rootflags=subvol=@` uses an equals sign, not a hyphen** — this exact typo has broken a boot before), user creation with `wheel` + `visudo`.
 5. **Reboot, remove install media, log in as the created user.**
 6. **Connectivity** — confirm before doing anything else: `ping -c 3 archlinux.org` (on Wi-Fi, connect first with `nmcli device wifi connect <SSID> password <password>`).
@@ -218,7 +218,7 @@ Both run the same config. On the laptop the Intel iGPU drives the display and no
 
 ## Known limitations
 
-- **`snapper rollback` itself does not work on this setup.** Snapper cannot detect a rollback "ambit" with systemd-boot plus a flat `@` layout. Use `snap-rollback` instead (docs/snapshots-and-backups.md). It does the subvolume swap at the btrfs top level, which works because fstab and the boot entry mount `@` by name.
+- **Snapper's built-in `snapper rollback` command does not work on this setup; use this repo's `snap-rollback` instead** (docs/snapshots-and-backups.md). `snapper rollback` works by changing btrfs's default subvolume, which the boot entry's explicit `rootflags=subvol=@` overrides (snapper also can't detect a rollback "ambit" with systemd-boot plus a flat `@` layout). `snap-rollback` swaps the subvolumes at the btrfs top level instead, which works because fstab and the boot entry mount `@` by name (hence no `subvolid=` in fstab, see "Before you start" step 3).
 - **Rollback doesn't carry nested subvolumes inside `@`** (e.g. `/var/lib/machines`); they stay in the old `@.pre-rollback-*`.
 
 ## Future work

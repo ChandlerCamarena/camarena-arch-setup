@@ -103,6 +103,7 @@ check "no failed systemd units"                    no_failed_units
 check "sddm enabled"                               systemctl is-enabled sddm
 check "NetworkManager active"                      systemctl is-active NetworkManager
 check "snapper timeline timer enabled"             systemctl is-enabled snapper-timeline.timer
+check "fstab mounts subvolumes by name (no subvolid)" test -z "$(grep -E '^[^#].*btrfs.*subvolid=' /etc/fstab)"
 check "root clean-install baseline snapshot"       baseline_exists root
 check "home clean-install baseline snapshot"       baseline_exists home
 check "quickshell installed"                       command -v quickshell

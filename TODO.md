@@ -25,7 +25,7 @@ Tick items off here (or delete them) in the same commit that does them.
 
 - [ ] **Session test in the VM.** The checks stop at "installed and configured": add SDDM autologin for `tester`, then assert Hyprland and Quickshell are running with no QML errors in the Quickshell log, and grab a screenshot (`grim`) as a run artifact.
 - [ ] **Rollback + backup test in the VM.** Attach a throwaway disk labelled `CAS-BACKUP`, run `snap-backup`, break something, `snap-rollback --baseline`, reboot, verify.
-- [ ] **Preflight checks in `00-preflight.sh`**: btrfs root on `@`, the expected subvolumes, systemd-boot, NetworkManager — fail before stage 01 instead of halfway through.
+- [ ] **Preflight checks in `00-preflight.sh`**: btrfs root on `@`, the expected subvolumes, no `subvolid=` in fstab, systemd-boot, NetworkManager — fail before stage 01 instead of halfway through.
 
 ## Polish
 

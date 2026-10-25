@@ -77,7 +77,8 @@ What it does, at the btrfs top level (`subvolid=5`):
    after saving the current ones into the old root's `.bootbackup-at-rollback/`.
 
 The running system is unaffected until you reboot. fstab and the
-systemd-boot entry mount `@` *by name*, so the next boot uses the restored copy.
+systemd-boot entry mount `@` *by name* (no `subvolid=` in fstab; README,
+"Before you start" step 3), so the next boot uses the restored copy.
 
 **Only `/` rolls back.** `/home`, `/var/log` and the pacman cache are separate
 subvolumes and stay as they are. That's usually what you want: roll the OS back,

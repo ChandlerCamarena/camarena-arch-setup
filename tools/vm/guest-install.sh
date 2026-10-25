@@ -55,6 +55,9 @@ echo "[guest] pacstrap..."
 mapfile -t BASE_PACKAGES < <(grep -vE '^\s*#|^\s*$' "$SEED/base-packages.txt")
 pacstrap -K /mnt "${BASE_PACKAGES[@]}"
 genfstab -U /mnt >> /mnt/etc/fstab
+# README step 3: mount subvolumes by name only, or snap-rollback's swap
+# would leave fstab pointing at the old root's subvolid
+sed -i -E 's/,subvolid=[0-9]+//; s/subvolid=[0-9]+,//' /mnt/etc/fstab
 
 ROOT_UUID="$(blkid -s UUID -o value "${DISK}3")"
 PUBKEY="$(cat "$SEED/authorized_keys")"
