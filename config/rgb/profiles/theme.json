@@ -1,0 +1,15 @@
+{
+  "default": {"mode": "static", "color": "bg"},
+  "devices": {
+    "Commander Core": {"mode": "direct", "zones": {"Pump": "error"}},
+    "Lighting Node":  {"mode": "direct"},
+    "NVIDIA":         {"mode": "direct", "color": "purple"},
+    "K100": {
+      "mode": "direct",
+      "leds": {
+        "Key: W": "error", "Key: A": "error", "Key: S": "error", "Key: D": "error",
+        "Key: Space": "error", "Key: Enter": "error", "Key: Number Pad Enter": "error"
+      }
+    }
+  }
+}

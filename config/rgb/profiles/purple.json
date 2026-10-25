@@ -1,0 +1,7 @@
+{
+  "default": {"mode": "static", "color": "#8000ff"},
+  "devices": {
+    "Corsair": {"mode": "direct"},
+    "NVIDIA":  {"mode": "direct", "color": "#ffffff"}
+  }
+}

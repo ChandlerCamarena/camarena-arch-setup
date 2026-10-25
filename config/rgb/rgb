@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# rgb - wrapper so the SDK client runs inside its own venv (openrgb-python).
+# Profiles: ~/.config/rgb/profiles/*.json, see ~/.config/rgb/rgb.py
+exec "$HOME/.config/rgb/venv/bin/python" "$HOME/.config/rgb/rgb.py" "$@"

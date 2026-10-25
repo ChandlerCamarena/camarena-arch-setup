@@ -93,12 +93,29 @@ copy_plain "$CONFIG_SRC/nvim/lua/lsp.lua"        "$HOME/.config/nvim/lua/lsp.lua
 log "Copying Rofi config..."
 copy_plain "$CONFIG_SRC/rofi/config.rasi"    "$HOME/.config/rofi/config.rasi"
 copy_plain "$CONFIG_SRC/rofi/powermenu.rasi" "$HOME/.config/rofi/powermenu.rasi"
-copy_plain "$CONFIG_SRC/rofi/colors/retrowave.rasi" "$HOME/.config/rofi/colors/retrowave.rasi"
 copy_plain "$CONFIG_SRC/rofi/launchers/type-1/launcher.sh"        "$HOME/.config/rofi/launchers/type-1/launcher.sh"
 copy_plain "$CONFIG_SRC/rofi/launchers/type-1/style-2.rasi"       "$HOME/.config/rofi/launchers/type-1/style-2.rasi"
 copy_plain "$CONFIG_SRC/rofi/launchers/type-1/shared/colors.rasi" "$HOME/.config/rofi/launchers/type-1/shared/colors.rasi"
 copy_plain "$CONFIG_SRC/rofi/launchers/type-1/shared/fonts.rasi"  "$HOME/.config/rofi/launchers/type-1/shared/fonts.rasi"
 chmod +x "$HOME/.config/rofi/launchers/type-1/launcher.sh"
+
+if command_exists openrgb; then
+    log "Copying RGB config (declarative OpenRGB profiles, see config/rgb/rgb.py)..."
+    copy_plain "$CONFIG_SRC/rgb/rgb.py"                 "$HOME/.config/rgb/rgb.py"
+    copy_plain "$CONFIG_SRC/rgb/profiles/off.json"      "$HOME/.config/rgb/profiles/off.json"
+    copy_plain "$CONFIG_SRC/rgb/profiles/purple.json"   "$HOME/.config/rgb/profiles/purple.json"
+    copy_plain "$CONFIG_SRC/rgb/profiles/theme.json"    "$HOME/.config/rgb/profiles/theme.json"
+    copy_plain "$CONFIG_SRC/rgb/rgb"                    "$HOME/.local/bin/rgb"
+    copy_plain "$CONFIG_SRC/systemd/user/openrgb.service" "$HOME/.config/systemd/user/openrgb.service"
+    chmod +x "$HOME/.local/bin/rgb" "$HOME/.config/rgb/rgb.py"
+    if [[ ! -x "$HOME/.config/rgb/venv/bin/python" ]]; then
+        log "Creating RGB venv with openrgb-python (not packaged in official repos)..."
+        python -m venv "$HOME/.config/rgb/venv"
+        "$HOME/.config/rgb/venv/bin/pip" install --quiet openrgb-python
+    fi
+else
+    log "openrgb not installed, skipping RGB config."
+fi
 
 log "Copying Thunar config..."
 copy_plain "$CONFIG_SRC/Thunar/uca.xml"    "$HOME/.config/Thunar/uca.xml"

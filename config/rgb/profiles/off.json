@@ -1,0 +1,6 @@
+{
+  "default": {"mode": "off"},
+  "devices": {
+    "Corsair": {"mode": "direct", "color": "#000000"}
+  }
+}

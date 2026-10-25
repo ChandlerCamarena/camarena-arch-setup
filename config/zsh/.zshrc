@@ -122,3 +122,7 @@ HISTFILE="$ZDOTDIR/.zsh_history"
 
 export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PATH="$HOME/.local/bin:$PATH"
+
+# RGB profiles (declarative, see ~/.config/rgb/profiles and `rgb --help`)
+alias lightsoff='rgb off'
+alias lightson='rgb purple'

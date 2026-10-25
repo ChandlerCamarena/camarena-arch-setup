@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenRGB SDK server + active rgb profile
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/openrgb --server --noautoconnect
+# rgb.py waits for the server, then applies ~/.config/rgb/active.
+# Leading '-' so a bad profile doesn't take the server down with it.
+ExecStartPost=-%h/.local/bin/rgb apply
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
