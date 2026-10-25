@@ -1,0 +1,21 @@
+# languages.txt
+# Programming languages beyond the defaults. C, C++ (gcc, clang) and Python
+# are in base.txt on every machine.
+#
+# ghc              - Glasgow Haskell Compiler
+# cabal-install    - cabal, Haskell's build tool / package manager
+# go               - Go toolchain, if you touch any Go-based CLI tools
+#                    or want it for future projects
+# nodejs           - JS runtime, needed for any web tooling or QML/JS
+#                    adjacent scripting outside Quickshell itself
+# npm              - node package manager, ships separately on Arch
+# haskell-language-server    - Haskell LSP for Neovim (pulls ~230 small
+#                              haskell-* library packages)
+# typescript-language-server - TS/JS LSP for Neovim
+cabal-install
+ghc
+go
+haskell-language-server
+nodejs
+npm
+typescript-language-server

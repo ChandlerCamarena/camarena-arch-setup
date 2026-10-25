@@ -27,14 +27,23 @@ map("n", "<leader>ff", "<cmd>Telescope find_files<cr>")
 map("n", "<leader>fg", "<cmd>Telescope live_grep<cr>")
 map("n", "<leader>fb", "<cmd>Telescope buffers<cr>")
 map("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>")
+map("n", "<leader>fs", "<cmd>Telescope lsp_document_symbols<cr>")  -- functions/classes in this file
+map("n", "<leader>fd", "<cmd>Telescope diagnostics<cr>")           -- all errors/warnings
+map("n", "<leader>/",  "<cmd>Telescope current_buffer_fuzzy_find<cr>")
+
+-- Debugger: F5 start/continue, F10/F11/F12 step over/into/out,
+-- <leader>b breakpoint, <leader>B conditional, <leader>D toggle UI (plugins.lua)
+-- Yazi float: <leader>- (plugins.lua)
+-- Comment: gcc line, gc{motion}/visual gc (built in)
 
 -- LSP (set in lsp config, listed here for reference)
 -- gd  = go to definition
--- gr  = go to references
+-- grr = go to references (built in since 0.11, as are grn/gra/gri)
 -- K   = hover docs
 -- <leader>rn = rename
 -- <leader>ca = code action
 -- <leader>d  = show diagnostics
+-- <leader>h  = switch header/source (C/C++, clangd)
 
 -- Clear search highlight
 map("n", "<Esc>", ":noh<CR>")

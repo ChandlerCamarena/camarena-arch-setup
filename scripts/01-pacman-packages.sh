@@ -39,8 +39,12 @@ if command_exists snapper; then
     snapshots_install_hooks
     snapshots_install_tools
 
-    log "Creating baseline snapshot before full package install..."
-    sudo snapper -c root create -c number -d "pre-install baseline (camarena-arch-setup)"
+    # First install only. update.sh reruns this stage, and snap-pac already
+    # brackets every pacman transaction with its own pre/post pair.
+    if [[ "${CAS_MODE:-install}" != update ]]; then
+        log "Creating baseline snapshot before full package install..."
+        sudo snapper -c root create -c number -d "pre-install baseline (camarena-arch-setup)"
+    fi
 else
     err "snapper binary not found after minimal install. Skipping configs, hooks, and baseline snapshot. Remaining packages will install WITHOUT snapshot protection."
 fi
@@ -77,9 +81,12 @@ if ! command_exists flatpak; then
     err "flatpak binary not found after pacman section. Check that 'flatpak' is listed in base.txt."
     exit 1
 fi
+# System-wide flatpak operations go through sudo, not flatpak's own polkit
+# check: polkit only waives the password for an active local session, so
+# over ssh/a script --noninteractive installs are refused outright.
 log "Ensuring Flathub remote is configured..."
 if ! flatpak remote-list | grep -q '^flathub'; then
-    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 else
     log "Flathub remote already present."
 fi
@@ -89,12 +96,16 @@ if [[ ! -f "$FLATPAK_PKGLIST" ]]; then
 fi
 mapfile -t flatpak_apps < <(grep -vE '^\s*#|^\s*$' "$FLATPAK_PKGLIST")
 for app in "${flatpak_apps[@]}"; do
-    if flatpak list --app | awk '{print $2}' | grep -qx "$app"; then
+    # Explicit column: the default output is tab-separated with app names
+    # that contain spaces ("Portal for Teams"), so awk's $2 isn't the ID.
+    # Captured first, see 04-fonts.sh on grep -q under pipefail.
+    installed_apps="$(flatpak list --app --columns=application)"
+    if grep -qx "$app" <<<"$installed_apps"; then
         log "$app already installed, updating..."
-        flatpak update --noninteractive "$app"
+        sudo flatpak update --noninteractive "$app"
     else
         log "Installing $app..."
-        flatpak install --noninteractive flathub "$app"
+        sudo flatpak install --noninteractive flathub "$app"
     fi
 done
 section_done "FLATPAK"

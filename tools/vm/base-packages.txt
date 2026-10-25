@@ -1,0 +1,17 @@
+# base-packages.txt
+# What guest-install.sh pacstraps into the test VM's base image: the README
+# "Before you start" minimum, plus what vm.sh needs to drive the VM (ssh in,
+# rsync the repo, git for update.sh). checks.sh ignores these when asserting
+# that a skipped profile's packages weren't installed.
+# Changing this list only takes effect after `vm.sh base --force`.
+base
+linux
+linux-firmware
+btrfs-progs
+sudo
+vim
+networkmanager
+intel-ucode
+openssh
+rsync
+git

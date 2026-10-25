@@ -3,7 +3,7 @@ local o = vim.opt
 
 -- Line numbers
 o.number         = true
-o.relativenumber = true
+o.relativenumber = false
 
 -- Indentation
 o.tabstop        = 2
@@ -14,7 +14,7 @@ o.smartindent    = true
 -- Search
 o.ignorecase     = true
 o.smartcase      = true
-o.hlsearch       = false
+o.hlsearch       = true   -- <Esc> clears it (keymaps.lua)
 o.incsearch      = true
 
 -- Appearance

@@ -216,15 +216,29 @@ require("lazy").setup({
   },
 
   -- ── Treesitter (syntax highlighting) ─────────────────
+  -- The `main` branch is a rewrite: no ensure_installed/highlight/indent
+  -- options anymore. Parsers are installed explicitly (compiled with
+  -- tree-sitter-cli, from base.txt) and highlighting is started per buffer.
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main",
+    lazy = false,
     build = ":TSUpdate",
-    main = "nvim-treesitter",
-    opts = {
-      ensure_installed = { "lua", "typescript", "tsx", "cpp", "c", "bash", "json" },
-      highlight        = { enable = true },
-      indent           = { enable = true },
-    },
+    config = function()
+      require("nvim-treesitter").install({
+        "bash", "c", "cpp", "haskell", "json", "lua", "markdown",
+        "markdown_inline", "python", "qmljs", "query", "tsx", "typescript",
+        "vim", "vimdoc",
+      })
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function(ev)
+          -- pcall: filetypes without an installed parser just keep vim syntax
+          if pcall(vim.treesitter.start, ev.buf) then
+            vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
+      })
+    end,
   },
 
   -- ── Autocomplete ─────────────────────────────────────
@@ -316,12 +330,100 @@ require("lazy").setup({
     end,
   },
 
-  -- ── Comments ──────────────────────────────────────────
+  -- Comments: built in since nvim 0.10 (gc / gcc), no plugin needed.
+
+  -- ── Keymap hints ──────────────────────────────────────
+  -- Press <leader> (or g, ], z, ...) and wait: lists what can follow.
   {
-    "numToStr/Comment.nvim",
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      spec = {
+        { "<leader>f", group = "find" },
+        { "<leader>c", group = "code" },
+        { "<leader>r", group = "rename" },
+      },
+    },
+  },
+
+  -- ── Format on save ────────────────────────────────────
+  -- Formatters come from pacman (clang-format ships with clang; ruff,
+  -- stylua, shfmt in base.txt). Indent args match the repo's own style
+  -- (4-space bash, 2-space Lua) instead of the tools' tab defaults.
+  {
+    "stevearc/conform.nvim",
+    event = "BufWritePre",
+    cmd = "ConformInfo",
+    opts = {
+      formatters_by_ft = {
+        c      = { "clang-format" },
+        cpp    = { "clang-format" },
+        python = { "ruff_format" },
+        lua    = { "stylua" },
+        sh     = { "shfmt" },
+        bash   = { "shfmt" },
+      },
+      formatters = {
+        shfmt  = { prepend_args = { "-i", "4", "-ci" } },
+        stylua = { prepend_args = { "--indent-type", "Spaces", "--indent-width", "2" } },
+      },
+      -- Anything not listed above falls back to its language server
+      format_on_save = { timeout_ms = 1000, lsp_format = "fallback" },
+    },
+  },
+
+  -- ── Debugger (C/C++) ──────────────────────────────────
+  -- gdb 14+ speaks the Debug Adapter Protocol natively (gdb -i dap), so no
+  -- separate adapter to install. Build with -g first.
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
+    keys = {
+      { "<F5>",      function() require("dap").continue() end,          desc = "Debug: start/continue" },
+      { "<F10>",     function() require("dap").step_over() end,         desc = "Debug: step over" },
+      { "<F11>",     function() require("dap").step_into() end,         desc = "Debug: step into" },
+      { "<F12>",     function() require("dap").step_out() end,          desc = "Debug: step out" },
+      { "<leader>b", function() require("dap").toggle_breakpoint() end, desc = "Debug: toggle breakpoint" },
+      { "<leader>B", function()
+          require("dap").set_breakpoint(vim.fn.input("Condition: "))
+        end, desc = "Debug: conditional breakpoint" },
+      { "<leader>D", function() require("dapui").toggle() end,          desc = "Debug: toggle UI" },
+    },
     config = function()
-      require("Comment").setup()
+      local dap, dapui = require("dap"), require("dapui")
+      dap.adapters.gdb = {
+        type    = "executable",
+        command = "gdb",
+        args    = { "--interpreter=dap", "--eval-command", "set print pretty on" },
+      }
+      dap.configurations.c = {
+        {
+          name    = "Launch executable",
+          type    = "gdb",
+          request = "launch",
+          program = function()
+            return vim.fn.input("Executable: ", vim.fn.getcwd() .. "/", "file")
+          end,
+          cwd     = "${workspaceFolder}",
+        },
+      }
+      dap.configurations.cpp = dap.configurations.c
+
+      dapui.setup()
+      dap.listeners.after.event_initialized["dapui"] = function() dapui.open() end
+      dap.listeners.before.event_terminated["dapui"] = function() dapui.close() end
+      dap.listeners.before.event_exited["dapui"]     = function() dapui.close() end
     end,
+  },
+
+  -- ── Yazi in a float ───────────────────────────────────
+  {
+    "mikavilpas/yazi.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    keys = {
+      { "<leader>-", "<cmd>Yazi<cr>", desc = "Yazi at current file" },
+    },
+    opts = {},
   },
 
 })

@@ -11,65 +11,30 @@ err() {
     echo "[$(date +%H:%M:%S)] ERROR: $*" >&2
 }
 
+source "$SCRIPT_DIR/scripts/lib/profiles.sh"
+
 usage() {
     cat <<USAGE
-Usage: $0 [profile flags]
+Usage: $0 [--skip a,b | --only a,b] [--delete-repo]
 
-Profiles (additive, combine as many as you want; base always installs):
-  -g, --gaming     steam, gamescope, gamemode, mangohud, prismlauncher, wine
-  -p, --personal   discord, spotify-launcher
-  -S, --security   recon/RE/pentest tooling, Burp + Metasploit builds
-  -s, --server     headless/server tooling
-  -d, --dev        general dev toolchain (non-Datum)
-  -D, --datum      Vulkan / Project Datum graphics-driver toolchain
-  -m, --media      recording/streaming tooling
-  -v, --virt       qemu/libvirt/virt-manager
+$(profile_usage)
 
-Short flags may be combined, e.g. -gpD for gaming+personal+datum.
-Any number of flags may be given, in any combination or order.
+  --delete-repo    remove this clone after every stage passes. By default
+                   it's kept, since update.sh runs from it.
 USAGE
 }
 
-declare -A VALID_PROFILES=(
-    [g]=gaming [p]=personal [S]=security [s]=server
-    [d]=dev [D]=datum [m]=media [v]=virt
-)
-
-PROFILES=()
-
-add_profile() {
-    local name="$1"
-    if [[ ! " ${PROFILES[*]:-} " == *" $name "* ]]; then
-        PROFILES+=("$name")
-    fi
-}
+PROFILE_ARGS=()
+DELETE_REPO=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --gaming) add_profile gaming; shift ;;
-        --personal) add_profile personal; shift ;;
-        --security) add_profile security; shift ;;
-        --server) add_profile server; shift ;;
-        --dev) add_profile dev; shift ;;
-        --datum) add_profile datum; shift ;;
-        --media) add_profile media; shift ;;
-        --virt) add_profile virt; shift ;;
+        --skip|--only)
+            [[ $# -ge 2 ]] || { err "$1 needs a value, e.g. $1 gaming,security"; exit 1; }
+            PROFILE_ARGS=("$1" "$2"); shift 2 ;;
+        --skip=*|--only=*) PROFILE_ARGS=("${1%%=*}" "${1#*=}"); shift ;;
+        --delete-repo) DELETE_REPO=1; shift ;;
         -h|--help) usage; exit 0 ;;
-        -*)
-            # combined short flags, e.g. -gpD
-            flagstr="${1#-}"
-            for (( i=0; i<${#flagstr}; i++ )); do
-                c="${flagstr:$i:1}"
-                if [[ -n "${VALID_PROFILES[$c]:-}" ]]; then
-                    add_profile "${VALID_PROFILES[$c]}"
-                else
-                    err "Unknown flag: -$c"
-                    usage
-                    exit 1
-                fi
-            done
-            shift
-            ;;
         *)
             err "Unknown argument: $1"
             usage
@@ -78,15 +43,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-export CAS_PROFILES="${PROFILES[*]:-}"
-
-if [[ -n "$CAS_PROFILES" ]]; then
-    log "Active profiles: $CAS_PROFILES"
-else
-    log "No profiles specified, base install only"
-fi
+resolve_profiles "${PROFILE_ARGS[@]}"
 
 log "Starting environment setup from $SCRIPT_DIR"
+
+# Repo linter on every commit (scripts/git-hooks/pre-commit -> verify-repo.sh)
+if [[ -d "$SCRIPT_DIR/.git" ]]; then
+    git -C "$SCRIPT_DIR" config --local core.hooksPath scripts/git-hooks
+fi
 
 for stage in "$SCRIPT_DIR"/scripts/0*.sh; do
     log "Running $(basename "$stage")..."
@@ -101,7 +65,9 @@ if [[ -x /usr/local/bin/snap-baseline ]]; then
     sudo /usr/local/bin/snap-baseline "clean install (camarena-arch-setup)"
 fi
 
-if [[ -f "$SCRIPT_DIR/install.sh" && -d "$SCRIPT_DIR/scripts" && -d "$SCRIPT_DIR/config" && -d "$SCRIPT_DIR/packages" ]]; then
+if [[ "$DELETE_REPO" -eq 0 ]]; then
+    log "Repo kept at $SCRIPT_DIR (update.sh runs from here)."
+elif [[ -f "$SCRIPT_DIR/install.sh" && -d "$SCRIPT_DIR/scripts" && -d "$SCRIPT_DIR/config" && -d "$SCRIPT_DIR/packages" ]]; then
     cd "$HOME"
     log "Removing repo directory $SCRIPT_DIR"
     rm -rf "$SCRIPT_DIR"

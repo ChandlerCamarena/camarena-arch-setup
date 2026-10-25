@@ -18,21 +18,26 @@
 # dnsmasq          - provides DHCP/DNS for libvirt's default NAT
 #                    network; libvirtd depends on this to hand VMs an
 #                    IP automatically
-# bridge-utils     - bridge networking tools, needed if you want a VM
-#                    on the same subnet as the host (bridged) rather
-#                    than NATed
+# (bridged VM networking: iproute2's `ip link add br0 type bridge` or
+#  NetworkManager; bridge-utils was dropped from the Arch repos)
 # spice-vdagent    - guest-side agent for clipboard sharing and dynamic
 #                    resolution resizing in SPICE-displayed VMs
 # libguestfs       - inspect/mount/edit VM disk images from the host
 #                    without booting the VM (useful for a fresh Arch
 #                    install.sh validation loop: build image, poke at
 #                    it, blow it away, repeat)
-bridge-utils
+# libisoburn       - xorriso, builds the cloud-init seed disk that
+#                    tools/vm/vm.sh hands the Arch ISO
+# openssh          - ssh client vm.sh drives the test VM through
+# rsync            - copies the working tree into the test VM
 dnsmasq
 edk2-ovmf
 libguestfs
+libisoburn
 libvirt
+openssh
 qemu-full
+rsync
 spice-vdagent
 swtpm
 virt-manager

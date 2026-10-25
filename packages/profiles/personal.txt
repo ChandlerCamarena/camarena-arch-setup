@@ -5,6 +5,3 @@
 #                    Spotify binary, avoids AUR)
 discord
 spotify-launcher
-# openrgb          - RGB control (SDK server); profiles in config/rgb/,
-#                    deployed only when this is installed
-openrgb

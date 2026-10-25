@@ -24,8 +24,11 @@ if [[ "$(stat -c %i "$dir")" == 256 ]]; then
     exit 0
 fi
 [[ ! -e "$old" ]] || { err "$old already exists from an earlier run; inspect and remove it first"; exit 1; }
-# system-wide open-file list filtered by path; lsof +D would walk the whole tree
-if lsof -w -Fn 2>/dev/null | grep -q "^n$dir/"; then
+# system-wide open-file list filtered by path; lsof +D would walk the whole tree.
+# Captured first: piped into grep -q under pipefail, lsof dies of SIGPIPE on
+# the first match and the pipeline reads as "nothing open".
+open_files="$(lsof -w -Fn 2>/dev/null || true)"
+if grep -q "^n$dir/" <<<"$open_files"; then
     err "files in $dir are open (close Steam etc. first)"
     exit 1
 fi

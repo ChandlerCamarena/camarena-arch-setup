@@ -10,32 +10,12 @@
 
 local M = {}
 
-local THEME_JSON_PATH = os.getenv("HOME") .. "/.config/hypr/theme.json"
-
--- Hardcoded fallback so a missing/malformed theme.json can't take
--- down the entire Hyprland config load. Mirrors the values that were
--- in theme.json at the time this loader was written; if you change
--- the palette, these will drift out of date but the shell.qml/QML
--- side reads theme.json directly and doesn't have this problem, so
--- only theme.lua is exposed to this risk.
-local DEFAULTS = {
-  colors = {
-    bg = "1e2060", bg_dark = "0d0f1a", bg_surface = "252870",
-    bg_float = "1a1c2e", border_inactive = "2e328055",
-    coral = "e8505b", coral_dim = "a03840",
-    purple = "9b6eb5", purple_dim = "6b4e80",
-    cyan = "06afc7", cyan_dim = "047a8c",
-    error = "ff3fa4", warning = "f0a050",
-    fg = "c8cae8", fg_dim = "8890b8", fg_subtle = "555880",
-    shadow = "0d0f1a99",
-  },
-  bevel = {
-    raised_light = "3a3e9c", raised_dark = "10122a",
-    sunken_light = "10122a", sunken_dark = "3a3e9c", width = 4,
-  },
-  layout = { border_size = 3, rounding = 0, gaps_in = 2, gaps_out = 2 },
-  font = { family = "Departure Mono", icon_family = "Symbols Nerd Font", size_base = 14 },
-  terminal_opacity = 0.85,
+-- Active rice first (a symlink, see config/rices/scripts/switch.sh), then
+-- the default rice's own file if that link is broken. No hardcoded palette
+-- here: a second copy of the colors would only drift from theme.json.
+local THEME_JSON_PATHS = {
+  os.getenv("HOME") .. "/.config/hypr/theme.json",
+  os.getenv("HOME") .. "/.config/rices/retrowave/theme.json",
 }
 
 -- Sets t[a][b][...] = value, creating intermediate tables as needed.
@@ -60,18 +40,18 @@ local function splitDots(s)
   return parts
 end
 
-local function loadFromJson()
+local function loadFromJson(path)
   -- jq flattens every scalar leaf in the JSON into "dotted.path = value"
   -- lines, e.g. "colors.bg = 1e2060" or "terminal_opacity = 0.85".
   -- One process spawn, one parse pass, no per-field popen calls.
   local cmd = string.format(
     "jq -r 'paths(scalars) as $p | \"\\($p | join(\".\")) = \\(getpath($p))\"' %q 2>/dev/null",
-    THEME_JSON_PATH
+    path
   )
 
   local handle = io.popen(cmd)
   if not handle then
-    print("[theme.lua] Warning: could not spawn jq, falling back to built-in defaults")
+    print("[theme.lua] Warning: could not spawn jq for " .. path)
     return nil
   end
 
@@ -86,8 +66,7 @@ local function loadFromJson()
   handle:close()
 
   if not output or output == "" then
-    print("[theme.lua] Warning: jq produced no output for "
-      .. THEME_JSON_PATH .. ", falling back to built-in defaults")
+    print("[theme.lua] Warning: jq produced no output for " .. path)
     return nil
   end
 
@@ -102,20 +81,28 @@ local function loadFromJson()
   end
 
   if lineCount == 0 then
-    print("[theme.lua] Warning: theme.json parsed but yielded no fields, falling back to built-in defaults")
+    print("[theme.lua] Warning: " .. path .. " parsed but yielded no fields")
     return nil
   end
 
   return data
 end
 
-local data = loadFromJson() or DEFAULTS
+local data
+for _, path in ipairs(THEME_JSON_PATHS) do
+  data = loadFromJson(path)
+  if data then break end
+end
+if not data then
+  error("[theme.lua] no readable theme.json (tried " .. table.concat(THEME_JSON_PATHS, ", ")
+    .. "); rerun update.sh or config/rices/scripts/switch.sh <rice>")
+end
 
 -- --------------------------------------------------------
 -- RAW COLOR TABLE
 -- Same field names as theme.json's "colors" object, unwrapped.
 -- --------------------------------------------------------
-local c = data.colors or DEFAULTS.colors
+local c = data.colors
 
 -- --------------------------------------------------------
 -- BACKGROUND FAMILY
@@ -183,15 +170,15 @@ M.shadow = "rgba(" .. c.shadow .. ")"
 -- Exposed raw (not string-wrapped) since options.lua and rules.lua
 -- consume these as numbers/strings directly, not as color literals.
 -- --------------------------------------------------------
-M.bevel  = data.bevel  or DEFAULTS.bevel
-M.layout = data.layout or DEFAULTS.layout
-M.font   = data.font   or DEFAULTS.font
+M.bevel  = data.bevel
+M.layout = data.layout
+M.font   = data.font
 
 -- --------------------------------------------------------
 -- TERMINAL OPACITY
 -- jq emits this as a string ("0.85"), cast back to a Lua number
 -- since kitty.conf generation / any numeric use expects a number.
 -- --------------------------------------------------------
-M.terminal_opacity = tonumber(data.terminal_opacity) or DEFAULTS.terminal_opacity
+M.terminal_opacity = tonumber(data.terminal_opacity)
 
 return M

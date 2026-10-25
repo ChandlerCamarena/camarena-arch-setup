@@ -1,0 +1,6 @@
+# rgb.txt
+# OpenRGB, driven by config/rgb (see docs/rgb.md). 05-dotfiles-copy.sh and
+# 06-services.sh only deploy the RGB config and service when openrgb is
+# installed, so skipping this skips all of it. Desktop-only hardware.
+# openrgb          - RGB controller daemon (SDK server) the rgb tool talks to
+openrgb

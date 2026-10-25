@@ -1,7 +1,7 @@
 # RGB (OpenRGB)
 
 Declarative profiles on top of the OpenRGB SDK server. Deployed only when
-`openrgb` is installed (`--personal` profile).
+`openrgb` is installed (`rgb` profile).
 
 ## Use
 
