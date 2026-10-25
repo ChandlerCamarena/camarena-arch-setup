@@ -11,60 +11,28 @@ err() {
     echo "[$(date +%H:%M:%S)] ERROR: $*" >&2
 }
 
+source "$SCRIPT_DIR/scripts/lib/profiles.sh"
+
 usage() {
     cat <<USAGE
-Usage: $0 [profile flags]
+Usage: $0 [--skip a,b | --only a,b]
 
-Same profile flags as install.sh. Pass whichever profiles are active
-on this machine so package/build steps know what to sync.
+No flags needed: the selection install.sh recorded in
+hosts/<hostname>.conf is used. Pass a flag only to change it.
 
-Profiles (additive, combine as many as you want; base always updates):
-  -g, --gaming     -p, --personal   -S, --security   -s, --server
-  -d, --dev        -D, --datum      -m, --media      -v, --virt
-
-Short flags may be combined, e.g. -gpD.
+$(profile_usage)
 USAGE
 }
 
-declare -A VALID_PROFILES=(
-    [g]=gaming [p]=personal [S]=security [s]=server
-    [d]=dev [D]=datum [m]=media [v]=virt
-)
-
-PROFILES=()
-
-add_profile() {
-    local name="$1"
-    if [[ ! " ${PROFILES[*]:-} " == *" $name "* ]]; then
-        PROFILES+=("$name")
-    fi
-}
+PROFILE_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --gaming) add_profile gaming; shift ;;
-        --personal) add_profile personal; shift ;;
-        --security) add_profile security; shift ;;
-        --server) add_profile server; shift ;;
-        --dev) add_profile dev; shift ;;
-        --datum) add_profile datum; shift ;;
-        --media) add_profile media; shift ;;
-        --virt) add_profile virt; shift ;;
+        --skip|--only)
+            [[ $# -ge 2 ]] || { err "$1 needs a value, e.g. $1 gaming,security"; exit 1; }
+            PROFILE_ARGS=("$1" "$2"); shift 2 ;;
+        --skip=*|--only=*) PROFILE_ARGS=("${1%%=*}" "${1#*=}"); shift ;;
         -h|--help) usage; exit 0 ;;
-        -*)
-            flagstr="${1#-}"
-            for (( i=0; i<${#flagstr}; i++ )); do
-                c="${flagstr:$i:1}"
-                if [[ -n "${VALID_PROFILES[$c]:-}" ]]; then
-                    add_profile "${VALID_PROFILES[$c]}"
-                else
-                    err "Unknown flag: -$c"
-                    usage
-                    exit 1
-                fi
-            done
-            shift
-            ;;
         *)
             err "Unknown argument: $1"
             usage
@@ -73,13 +41,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-export CAS_PROFILES="${PROFILES[*]:-}"
-
-if [[ -n "$CAS_PROFILES" ]]; then
-    log "Active profiles: $CAS_PROFILES"
-else
-    log "No profiles specified, base update only"
+# Validate now, before the pull; the selection is written after it, since
+# the clean-tree check below would refuse a just-modified host file.
+if [[ ${#PROFILE_ARGS[@]} -gt 0 ]]; then
+    expand_profiles "${PROFILE_ARGS[1]}"
 fi
+
+# Stages check this to skip first-install-only steps
+export CAS_MODE=update
 
 log "Starting update from $SCRIPT_DIR"
 
@@ -105,9 +74,18 @@ if ! git pull --ff-only; then
     exit 1
 fi
 
+resolve_profiles "${PROFILE_ARGS[@]}"
+
 # ---------------------------------------------------------------------------
 log "Running preflight checks..."
 bash "$SCRIPT_DIR/scripts/00-preflight.sh"
+
+# ---------------------------------------------------------------------------
+# Before anything is installed: the package sync below reinstalls every
+# listed package, so a removal has to reach the lists first. Interactive on a
+# terminal, report-only otherwise (CAS_NONINTERACTIVE=1 forces report-only).
+log "Reviewing package lists against what's installed..."
+bash "$SCRIPT_DIR/tools/sync-packages.sh"
 
 # ---------------------------------------------------------------------------
 log "Running full system upgrade (pacman -Syu)..."
@@ -121,7 +99,7 @@ log "Checking source builds for updates (quickshell, xpadneo, grimblast, profile
 bash "$SCRIPT_DIR/scripts/02-build-from-source.sh"
 
 # ---------------------------------------------------------------------------
-log "Refreshing dotfiles from repo..."
+log "Reconciling dotfiles with repo (overwrite managed files, prune removed ones)..."
 bash "$SCRIPT_DIR/scripts/05-dotfiles-copy.sh"
 
 # ---------------------------------------------------------------------------
@@ -129,4 +107,8 @@ log "Refreshing services and SDDM theme..."
 bash "$SCRIPT_DIR/scripts/06-services.sh"
 
 # ---------------------------------------------------------------------------
+if [[ -n "$(git -C "$SCRIPT_DIR" status --porcelain -- packages/ hosts/)" ]]; then
+    log "Package lists / host selection changed during this update; commit them (the next update.sh refuses a dirty tree):"
+    git -C "$SCRIPT_DIR" status --short -- packages/ hosts/
+fi
 log "Update complete. Restart Hyprland or reboot to apply any changes."
