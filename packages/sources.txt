@@ -18,8 +18,8 @@
 #                  (scripts/lib/builds/languages.sh)
 quickshell       git      https://github.com/quickshell-mirror/quickshell.git     master  9b0f339b19057f4731bf3b48293307d7ef241671
 contrib          git      https://github.com/hyprwm/contrib.git                   main    a54daf843dcdf6f5ff86996ab011de6e86a1bd7c
-xpadneo          git      https://github.com/atar-axis/xpadneo.git                master  3acca9f5e211edb601000bb64767b78b2468f787
-ohmyzsh          git      https://github.com/ohmyzsh/ohmyzsh.git                  master  42a4ccb1b14dbeffe81259105a5243b4f4cb618e
-powerlevel10k    git      https://github.com/romkatv/powerlevel10k.git            master  3308262dfbd743b6e1d3956a2b5572f7a049d692
-metasploit       git      https://github.com/rapid7/metasploit-framework.git      master  e25d6ee62a0c7f7df27f367c8028859fdf8136a7
-powershell       release  https://github.com/PowerShell/PowerShell                latest  v7.6.7
+xpadneo          git      https://github.com/atar-axis/xpadneo.git                master  39625746fff63c997eeb53fe3a6fc1a3de08702e
+ohmyzsh          git      https://github.com/ohmyzsh/ohmyzsh.git                  master  d2b7f557cceaddb16ba89bbf8200d8a8df35c4d8
+powerlevel10k    git      https://github.com/romkatv/powerlevel10k.git            master  d05a1b00f9a61f9578bf9dc19b8451942dde8734
+metasploit       git      https://github.com/rapid7/metasploit-framework.git      master  44fe01530c1a16ccc4b4b1ff37ec282907e1b2a0
+powershell       release  https://github.com/PowerShell/PowerShell                latest  v7.6.9
